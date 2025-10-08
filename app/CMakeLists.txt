@@ -1,16 +1,20 @@
 cmake_minimum_required(VERSION 4.0)
-project(test5)
+project(OpenGlApp)
 
 set(CMAKE_CXX_STANDARD 23)
 
-find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
 
-add_executable(test5
+add_executable(OpenGlApp
         src/main.cpp
         src/config.h
+        dependencies/GLAD/glad.c
 )
 
-target_include_directories(test5 PRIVATE dependencies)
+target_include_directories(OpenGlApp PRIVATE
+        dependencies
+        dependencies/GLAD
+        dependencies/GLM
+)
 
-target_link_libraries(test5 glfw OpenGL::GL)
+target_link_libraries(OpenGlApp glfw)
