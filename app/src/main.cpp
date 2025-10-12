@@ -17,19 +17,36 @@ void main() {
 }
 )";
 
+void processInput(GLFWwindow *window)
+{
+    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
 int main() {
     glfwInit();
-    GLFWwindow* window = glfwCreateWindow(480, 480, "Circle", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(480, 480, "LearnOpenGL", NULL, NULL);
+    if (window == NULL)
+    {
+        std::cout << "Failed to create GLFW window" << std::endl;
+        glfwTerminate();
+        return -1;
+    }
     glfwMakeContextCurrent(window);
-    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        std::cout << "Failed to initialize GLAD" << std::endl;
+        return -1;
+    }
 
     // Generate circle vertices
-    const int num_segments = 100;
+    const int num_segments = 20l;
     float vertices[2 * (num_segments + 2)];
-    float cx = 0.0f, cy = 0.0f, r = 0.5f;
-    vertices[0] = cx; vertices[1] = cy;
+    float cx = 0.0f, cy = 0.0f, r = 1.0f;
+    vertices[0] = cx;
+    vertices[1] = cy;
     for (int i = 0; i <= num_segments; ++i) {
-        float theta = 2.0f * 3.1415926f * float(i) / float(num_segments);
+        float theta = 2.0f * M_PIf * float(i) / float(num_segments);
         vertices[2 * (i + 1)] = cx + r * cosf(theta);
         vertices[2 * (i + 1) + 1] = cy + r * sinf(theta);
     }
@@ -41,7 +58,7 @@ int main() {
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *) 0);
     glEnableVertexAttribArray(0);
 
     // Compile shaders
@@ -63,6 +80,9 @@ int main() {
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLE_FAN, 0, num_segments + 2);
+
+        processInput(window);
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
