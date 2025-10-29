@@ -3,12 +3,19 @@ project(OpenGlApp)
 
 set(CMAKE_CXX_STANDARD 23)
 
-find_package(glfw3 REQUIRED)
-
 add_executable(OpenGlApp
         src/main.cpp
         src/config.h
         dependencies/GLAD/glad.c
+
+        #imgui
+        dependencies/imgui/imgui.cpp
+        dependencies/imgui/imgui_draw.cpp
+        dependencies/imgui/imgui_widgets.cpp
+        dependencies/imgui/imgui_tables.cpp
+        dependencies/imgui/imgui_demo.cpp
+        dependencies/imgui/imgui_impl_glfw.cpp
+        dependencies/imgui/imgui_impl_opengl3.cpp
 )
 
 target_include_directories(OpenGlApp PRIVATE
@@ -18,4 +25,9 @@ target_include_directories(OpenGlApp PRIVATE
         dependencies/imgui
 )
 
-target_link_libraries(OpenGlApp glfw)
+find_package(glfw3 REQUIRED)
+
+target_link_libraries(OpenGlApp
+    PRIVATE
+        glfw
+)
