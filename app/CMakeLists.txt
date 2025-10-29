@@ -15,6 +15,7 @@ target_include_directories(OpenGlApp PRIVATE
         dependencies
         dependencies/GLAD
         dependencies/GLM
+        dependencies/imgui
 )
 
 target_link_libraries(OpenGlApp glfw)
