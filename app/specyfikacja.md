@@ -17,6 +17,7 @@ Aplikacja pozwoli na wizualne przedstawienie podstawowych zjawisk fizycznych, ta
 |------------|--------------|
 | Język programowania | C++23 |
 | Rendering | OpenGL 4.5 |
+|UI|ImGui|
 | Zarządzanie oknem i wejściem | GLFW |
 | Ładowanie funkcji OpenGL | GLAD |
 | Obliczenia wektorowe i macierze | GLM |
@@ -51,7 +52,7 @@ Aplikacja pozwoli na wizualne przedstawienie podstawowych zjawisk fizycznych, ta
 
 ---
 
-### **Filip Lubka — Interfejs, wejście i główny loop (GLFW + integracja)**
+### **Filip Lubka — Interfejs, wejście i główny loop (GLFW / ImGui + integracja)**
 
 **Zakres odpowiedzialności:**
 - Inicjalizacja okna i kontekstu OpenGL (`Window`).
