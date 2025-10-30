@@ -10,11 +10,19 @@ void main() {
 }
 )";
 
-const char* fragmentShaderSource = R"(
+const char* fragmentShaderSourceRed = R"(
 #version 330 core
 out vec4 FragColor;
 void main() {
     FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Red
+}
+)";
+
+const char* fragmentShaderSourceGreeen = R"(
+#version 330 core
+out vec4 FragColor;
+void main() {
+    FragColor = vec4(0.0, 1.0, 0.0, 1.0); // Red
 }
 )";
 
@@ -96,18 +104,34 @@ int main() {
     glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
     glCompileShader(vertexShader);
 
-    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
-    glCompileShader(fragmentShader);
+    // Red fragment shader
+    GLuint fragmentShaderRed = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShaderRed, 1, &fragmentShaderSourceRed, nullptr);
+    glCompileShader(fragmentShaderRed);
 
-    // Link shaders
-    GLuint shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
+    // Green fragment shader
+    GLuint fragmentShaderGreen = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShaderGreen, 1, &fragmentShaderSourceGreeen, nullptr);
+    glCompileShader(fragmentShaderGreen);
+
+    // Link red shader program
+    GLuint shaderProgramRed = glCreateProgram();
+    glAttachShader(shaderProgramRed, vertexShader);
+    glAttachShader(shaderProgramRed, fragmentShaderRed);
+    glLinkProgram(shaderProgramRed);
+
+    // Link green shader program
+    GLuint shaderProgramGreen = glCreateProgram();
+    glAttachShader(shaderProgramGreen, vertexShader);
+    glAttachShader(shaderProgramGreen, fragmentShaderGreen);
+    glLinkProgram(shaderProgramGreen);
+
+    // Clean up shaders as they're linked into our program now and no longer necessary
     glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    glDeleteShader(fragmentShaderRed);
+    glDeleteShader(fragmentShaderGreen);
 
+    // Set polygon mode to line (wireframe)
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     IMGUI_CHECKVERSION();
@@ -124,11 +148,15 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        glUseProgram(shaderProgram);
+        // Set red color
+        glUseProgram(shaderProgramRed);
 
         // Draw circle
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLE_FAN, 0, num_segments + 2);
+
+        // Set green color
+        glUseProgram(shaderProgramGreen);
 
         // Draw triangle
         glBindVertexArray(triVAO);
