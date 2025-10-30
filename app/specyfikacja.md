@@ -44,9 +44,9 @@ Aplikacja pozwoli na wizualne przedstawienie podstawowych zjawisk fizycznych, ta
 **Zakres odpowiedzialności:**
 - Inicjalizacja OpenGL 4.5 i GLAD.
 - Tworzenie i kompilacja shaderów.
-- Tworzenie buforów (VAO, VBO) i rysowanie obiektu (kuli).
+- Tworzenie buforów (VAO, VBO, EBO).
 - Implementacja klasy renderującej:
-    - Rysowanie kuli i tła.
+    - Rysowanie obiektów i interfejsu użytkownika.
     - Obsługa koloru, pozycji i skalowania w shaderze.
 - Optymalizacja renderowania i czyszczenia ekranu.
 
