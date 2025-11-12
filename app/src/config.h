@@ -10,4 +10,11 @@
 #include <glm/glm.hpp>
 #include <GLFW/glfw3.h>
 
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <cstring>
+
+#include <filesystem>
+
 using namespace std;
