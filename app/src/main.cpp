@@ -1,22 +1,30 @@
 // main.cpp
 #include "config.h"
 
-// Vertex and fragment shader sources
-const char* vertexShaderSource = R"(
-#version 330 core
-layout(location = 0) in vec2 aPos;
-void main() {
-    gl_Position = vec4(aPos, 0.0, 1.0);
-}
-)";
+std::string loadShaderSource(const std::string& filePath) {
+    std::ifstream file("../src/shaders/" + filePath);
+    if (!file.is_open()) {
+        std::filesystem::path cureent = std::filesystem::current_path();
+        std::cerr << "Can't open given file: " << filePath << "| Current directory: " << cureent.string() <<  std::endl;
+        return "";
+    }
 
-const char* fragmentShaderSource = R"(
-#version 330 core
-out vec4 FragColor;
-void main() {
-    FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Red
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    std::string content = buffer.str();
+
+    return content;
 }
-)";
+
+std::string vertexShaderSourceStr = loadShaderSource("main.vert");
+const char* vertexShaderSource = vertexShaderSourceStr.c_str();
+
+std::string fragmentShaderSourceRedStr = loadShaderSource("red.frag");
+const char* fragmentShaderSourceRed = fragmentShaderSourceRedStr.c_str();
+
+std::string fragmentShaderSourceGreenStr = loadShaderSource("green.frag");
+const char* fragmentShaderSourceGreen = fragmentShaderSourceGreenStr.c_str();
+
 
 void processInput(GLFWwindow *window)
 {
@@ -96,18 +104,34 @@ int main() {
     glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
     glCompileShader(vertexShader);
 
-    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
-    glCompileShader(fragmentShader);
+    // Red fragment shader
+    GLuint fragmentShaderRed = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShaderRed, 1, &fragmentShaderSourceRed, nullptr);
+    glCompileShader(fragmentShaderRed);
 
-    // Link shaders
-    GLuint shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
+    // Green fragment shader
+    GLuint fragmentShaderGreen = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShaderGreen, 1, &fragmentShaderSourceGreen, nullptr);
+    glCompileShader(fragmentShaderGreen);
+
+    // Link red shader program
+    GLuint shaderProgramRed = glCreateProgram();
+    glAttachShader(shaderProgramRed, vertexShader);
+    glAttachShader(shaderProgramRed, fragmentShaderRed);
+    glLinkProgram(shaderProgramRed);
+
+    // Link green shader program
+    GLuint shaderProgramGreen = glCreateProgram();
+    glAttachShader(shaderProgramGreen, vertexShader);
+    glAttachShader(shaderProgramGreen, fragmentShaderGreen);
+    glLinkProgram(shaderProgramGreen);
+
+    // Clean up shaders as they're linked into our program now and no longer necessary
     glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    glDeleteShader(fragmentShaderRed);
+    glDeleteShader(fragmentShaderGreen);
 
+    // Set polygon mode to line (wireframe)
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     IMGUI_CHECKVERSION();
@@ -124,11 +148,15 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        glUseProgram(shaderProgram);
+        // Set red color
+        glUseProgram(shaderProgramRed);
 
         // Draw circle
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLE_FAN, 0, num_segments + 2);
+
+        // Set green color
+        glUseProgram(shaderProgramGreen);
 
         // Draw triangle
         glBindVertexArray(triVAO);
