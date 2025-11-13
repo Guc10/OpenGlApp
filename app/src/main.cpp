@@ -4,8 +4,8 @@
 std::string loadShaderSource(const std::string& filePath) {
     std::ifstream file("../src/shaders/" + filePath);
     if (!file.is_open()) {
-        std::filesystem::path cureent = std::filesystem::current_path();
-        std::cerr << "Can't open given file: " << filePath << "| Current directory: " << cureent.string() <<  std::endl;
+        std::filesystem::path current = std::filesystem::current_path();
+        std::cerr << "Can't open given file: " << filePath << "| Current directory: " << current.string() <<  std::endl;
         return "";
     }
 
