@@ -1,0 +1,45 @@
+cmake_minimum_required(VERSION 4.0)
+project(OpenGlApp)
+
+set(CMAKE_CXX_STANDARD 23)
+
+set(SOURCES
+    main.cpp
+)
+
+set(HEADERS
+    config.h
+)
+
+set(LIBRARIES
+    ../dependencies/GLAD/glad.c
+
+    #imgui
+    ../dependencies/imgui/imgui.cpp
+    ../dependencies/imgui/imgui_draw.cpp
+    ../dependencies/imgui/imgui_widgets.cpp
+    ../dependencies/imgui/imgui_tables.cpp
+    ../dependencies/imgui/imgui_demo.cpp
+    ../dependencies/imgui/imgui_impl_glfw.cpp
+    ../dependencies/imgui/imgui_impl_opengl3.cpp
+)
+
+add_executable(OpenGlApp
+    ${SOURCES}
+    ${HEADERS}
+    ${LIBRARIES}
+)
+
+target_include_directories(OpenGlApp PRIVATE
+        ../dependencies
+        ../dependencies/GLAD
+        ../dependencies/GLM
+        ../dependencies/imgui
+)
+
+find_package(glfw3 REQUIRED)
+
+target_link_libraries(OpenGlApp
+    PRIVATE
+        glfw
+)
