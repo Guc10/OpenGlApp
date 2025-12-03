@@ -36,7 +36,7 @@ void processInput(GLFWwindow *window)
 int main() {
     glfwInit();
 
-    GLFWwindow* window = glfwCreateWindow(480, 480, "LearnOpenGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
