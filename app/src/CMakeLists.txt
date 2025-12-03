@@ -7,12 +7,20 @@ set(SOURCES
     main.cpp
     physics/Ball.cpp
     physics/Movement.cpp
+    renders/LeftWall.cpp
+    renders/RightWall.cpp
+    renders/Floor.cpp
+    renders/BouncingBall.cpp
 )
 
 set(HEADERS
     config.h
     physics/Ball.h
     physics/Movement.h
+    renders/LeftWall.h
+    renders/RightWall.h
+    renders/Floor.h
+    renders/BouncingBall.h
 )
 
 set(IMGUI
@@ -27,6 +35,7 @@ set(IMGUI
 
 set(GLAD
     ../dependencies/GLAD/glad.c
+        renders/Floor.cpp
 )
 
 add_executable(OpenGlApp
