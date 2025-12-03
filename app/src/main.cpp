@@ -2,7 +2,7 @@
 #include "config.h"
 
 std::string loadShaderSource(const std::string& filePath) {
-    std::ifstream file("../src/shaders/" + filePath);
+    std::ifstream file(std::string(SHADER_DIR) + filePath);
     if (!file.is_open()) {
         std::filesystem::path current = std::filesystem::current_path();
         std::cerr << "Can't open given file: " << filePath << "| Current directory: " << current.string() <<  std::endl;
@@ -25,6 +25,9 @@ const char* fragmentShaderSourceRed = fragmentShaderSourceRedStr.c_str();
 std::string fragmentShaderSourceGreenStr = loadShaderSource("green.frag");
 const char* fragmentShaderSourceGreen = fragmentShaderSourceGreenStr.c_str();
 
+std::string fragmentShaderSourceBlueStr = loadShaderSource("blue.frag");
+const char* fragmentShaderSourceBlue = fragmentShaderSourceBlueStr.c_str();
+
 
 void processInput(GLFWwindow *window)
 {
@@ -36,7 +39,7 @@ void processInput(GLFWwindow *window)
 int main() {
     glfwInit();
 
-    GLFWwindow* window = glfwCreateWindow(480, 480, "LearnOpenGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -97,7 +100,95 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
     glEnableVertexAttribArray(0);
 
+    // Left wall vertices & indices
+    float leftWallVertices[] = {
+        -0.9f,  1.0f, 0.0f,  // top right
+        -0.9f, -1.0f, 0.0f,  // bottom right
+        -1.0f, -1.0f, 0.0f,  // bottom left
+        -1.0f,  1.0f, 0.0f   // top left
+    };
 
+    unsigned int leftWallIndices[] = {
+        0, 1, 3,  // first Triangle
+        1, 2, 3   // second Triangle
+    };
+
+    // Left wall VAO & VBO & EBO
+    GLuint leftWallVAO, leftWallVBO, leftWallEBO;
+
+    glGenVertexArrays(1, &leftWallVAO);
+    glBindVertexArray(leftWallVAO);
+
+    glGenBuffers(1, &leftWallVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, leftWallVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(leftWallVertices), leftWallVertices, GL_STATIC_DRAW);
+
+    glGenBuffers(1, &leftWallEBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, leftWallEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(leftWallIndices), leftWallIndices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Right wall vertices & indices
+    float rightWallVertices[] = {
+        0.9f,  1.0f, 0.0f,  // top right
+        0.9f, -1.0f, 0.0f,  // bottom right
+        1.0f, -1.0f, 0.0f,  // bottom left
+        1.0f,  1.0f, 0.0f   // top left
+    };
+
+    unsigned int rightWallIndices[] = {
+        0, 1, 3,  // first Triangle
+        1, 2, 3   // second Triangle
+    };
+
+    // Right wall VAO & VBO & EBO
+    GLuint rightWallVAO, rightWallVBO, rightWallEBO;
+
+    glGenVertexArrays(1, &rightWallVAO);
+    glBindVertexArray(rightWallVAO);
+
+    glGenBuffers(1, &rightWallVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, rightWallVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(rightWallVertices), rightWallVertices, GL_STATIC_DRAW);
+
+    glGenBuffers(1, &rightWallEBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rightWallEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(rightWallIndices), rightWallIndices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Floor vertices & indices
+    float floorVertices[] = {
+        1.0f,  -0.9f, 0.0f,  // top right
+        1.0f,  -1.0f, 0.0f,  // bottom right
+        -1.0f, -1.0f, 0.0f,  // bottom left
+        -1.0f, -0.9f, 0.0f   // top left
+    };
+
+    unsigned int floorIndices[] = {
+        0, 1, 3,  // first Triangle
+        1, 2, 3   // second Triangle
+    };
+
+    // Right wall VAO & VBO & EBO
+    GLuint floorVAO, floorVBO, floorEBO;
+
+    glGenVertexArrays(1, &floorVAO);
+    glBindVertexArray(floorVAO);
+
+    glGenBuffers(1, &floorVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, floorVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(floorVertices), floorVertices, GL_STATIC_DRAW);
+
+    glGenBuffers(1, &floorEBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, floorEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(floorIndices), floorIndices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
 
     // Compile shaders
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -114,6 +205,11 @@ int main() {
     glShaderSource(fragmentShaderGreen, 1, &fragmentShaderSourceGreen, nullptr);
     glCompileShader(fragmentShaderGreen);
 
+    // Blue fragment shader
+    GLuint fragmentShaderBlue = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShaderBlue, 1, &fragmentShaderSourceBlue, nullptr);
+    glCompileShader(fragmentShaderBlue);
+
     // Link red shader program
     GLuint shaderProgramRed = glCreateProgram();
     glAttachShader(shaderProgramRed, vertexShader);
@@ -126,27 +222,25 @@ int main() {
     glAttachShader(shaderProgramGreen, fragmentShaderGreen);
     glLinkProgram(shaderProgramGreen);
 
+    // Link blue shader program
+    GLuint shaderProgramBlue = glCreateProgram();
+    glAttachShader(shaderProgramBlue, vertexShader);
+    glAttachShader(shaderProgramBlue, fragmentShaderBlue);
+    glLinkProgram(shaderProgramBlue);
+
     // Clean up shaders as they're linked into our program now and no longer necessary
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShaderRed);
     glDeleteShader(fragmentShaderGreen);
+    glDeleteShader(fragmentShaderBlue);
 
     // Set polygon mode to line (wireframe)
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    ImGui::StyleColorsDark();
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 330");
+
 
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT);
-
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
 
         // Set red color
         glUseProgram(shaderProgramRed);
@@ -162,22 +256,26 @@ int main() {
         glBindVertexArray(triVAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
+        // Set color blue
+        glUseProgram(shaderProgramBlue);
+
+        // Draw left wall
+        glBindVertexArray(leftWallVAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        //Draw right wall
+        glBindVertexArray(rightWallVAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        //Draw floor
+        glBindVertexArray(floorVAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
         processInput(window);
-
-        ImGui::Begin("Settings");
-        ImGui::Text("1. _");
-        ImGui::End();
-
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
