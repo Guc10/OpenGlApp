@@ -11,10 +11,7 @@ set(HEADERS
     config.h
 )
 
-set(LIBRARIES
-    ../dependencies/GLAD/glad.c
-
-    #imgui
+set(IMGUI
     ../dependencies/imgui/imgui.cpp
     ../dependencies/imgui/imgui_draw.cpp
     ../dependencies/imgui/imgui_widgets.cpp
@@ -24,22 +21,25 @@ set(LIBRARIES
     ../dependencies/imgui/imgui_impl_opengl3.cpp
 )
 
+set(GLAD
+    ../dependencies/GLAD/glad.c
+)
+
 add_executable(OpenGlApp
     ${SOURCES}
     ${HEADERS}
-    ${LIBRARIES}
+    ${IMGUI}
+    ${GLAD}
 )
 
 target_include_directories(OpenGlApp PRIVATE
-        ../dependencies
-        ../dependencies/GLAD
-        ../dependencies/GLM
-        ../dependencies/imgui
+    ../dependencies
+    ../dependencies/GLAD
+    ../dependencies/GLM
+    ../dependencies/imgui
 )
 
 find_package(glfw3 REQUIRED)
+target_link_libraries(OpenGlApp PRIVATE glfw)
 
-target_link_libraries(OpenGlApp
-    PRIVATE
-        glfw
-)
+add_definitions(-DSHADER_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}/shaders/\")

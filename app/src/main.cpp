@@ -2,7 +2,7 @@
 #include "config.h"
 
 std::string loadShaderSource(const std::string& filePath) {
-    std::ifstream file("../shaders/" + filePath);
+    std::ifstream file(std::string(SHADER_DIR) + filePath);
     if (!file.is_open()) {
         std::filesystem::path current = std::filesystem::current_path();
         std::cerr << "Can't open given file: " << filePath << "| Current directory: " << current.string() <<  std::endl;
