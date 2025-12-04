@@ -1,5 +1,6 @@
 // main.cpp
 #include "config.h"
+#include "physics/Boundaries.h"
 
 std::string loadShaderSource(const std::string& filePath) {
     std::ifstream file(std::string(SHADER_DIR) + filePath);
@@ -57,10 +58,8 @@ int main() {
     // generate bouncing ball
     const float radius = 0.1, num_segments = 20;
 
-    // generate walls and floor
-    createLeftWall();
-    createRightWall();
-    createFloor();
+    // generate boundaries
+    auto *boundaries = new Boundaries();
 
     // Compile shaders
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -107,9 +106,7 @@ int main() {
     glDeleteShader(fragmentShaderBlue);
 
     // Set polygon mode to line (wireframe)
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     while (!glfwWindowShouldClose(window)) {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -127,17 +124,9 @@ int main() {
         // Set color blue
         glUseProgram(shaderProgramBlue);
 
-        // Draw left wall
-        glBindVertexArray(leftWallVAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-        //Draw right wall
-        glBindVertexArray(rightWallVAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-        //Draw floor
-        glBindVertexArray(floorVAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        // Draw boundaries
+        glBindVertexArray(boundaries->boundariesVAO);
+        glDrawElements(GL_TRIANGLES, 24, GL_UNSIGNED_INT, 0);
 
         processInput(window);
 

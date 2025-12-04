@@ -1,4 +1,4 @@
-#include "Floor.h"
+#include "../config.h"
 
 // VAO & VBO
 GLuint bouncingBallVAO;
