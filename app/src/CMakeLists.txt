@@ -5,18 +5,16 @@ set(CMAKE_CXX_STANDARD 23)
 
 set(SOURCES
     main.cpp
-    physics/Ball.cpp
-    physics/Movement.cpp
-    physics/Boundaries.cpp
-        renders/BouncingBall.cpp
+        objects/Ball.cpp
+        objects/Movement.cpp
+        objects/Boundaries.cpp
 )
 
 set(HEADERS
     config.h
-    physics/Ball.h
-    physics/Movement.h
-    physics/Boundaries.h
-        renders/BouncingBall.h
+        objects/Ball.h
+        objects/Movement.h
+        objects/Boundaries.h
 )
 
 set(IMGUI

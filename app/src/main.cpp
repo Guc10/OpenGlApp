@@ -1,6 +1,7 @@
 // main.cpp
 #include "config.h"
-#include "physics/Boundaries.h"
+#include "objects/Boundaries.h"
+#include "objects/Ball.h"
 
 std::string loadShaderSource(const std::string& filePath) {
     std::ifstream file(std::string(SHADER_DIR) + filePath);
@@ -56,7 +57,9 @@ int main() {
     }
 
     // generate bouncing ball
-    const float radius = 0.1, num_segments = 20;
+    const float radius = 0.1;
+    const unsigned int num_segments = 20;
+    auto *ball = new Ball(0.8f, radius, num_segments);
 
     // generate boundaries
     auto *boundaries = new Boundaries();
@@ -116,9 +119,9 @@ int main() {
         glUseProgram(shaderProgramRed);
 
         // Draw circle
-        createBouncingBall(radius, num_segments);
+        ball->CreateBouncingBall();
 
-        glBindVertexArray(bouncingBallVAO);
+        glBindVertexArray(ball->bouncingBallVAO);
         glDrawArrays(GL_TRIANGLE_FAN, 0, num_segments + 2);
 
         // Set color blue

@@ -17,7 +17,4 @@
 
 #include <filesystem>
 
-// Renders
-#include <../src/renders/BouncingBall.h>
-
 using namespace std;

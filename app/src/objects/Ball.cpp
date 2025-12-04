@@ -1,16 +1,21 @@
-#include "../config.h"
+#include "Ball.h"
 
-// VAO & VBO
-GLuint bouncingBallVAO;
+Ball::Ball(const float reflectance, const float radius, const unsigned int num_segments) {
+    Reflectance = reflectance;
+    Radius = radius;
+    NumSegments = num_segments;
+    CreateBouncingBall();
+}
 
-void createBouncingBall(float radius, unsigned int num_segments) {
+
+void Ball::CreateBouncingBall() {
     float timeValue = glfwGetTime();
-    float vertices[2 * (num_segments + 2)];
-    float cx = sin(timeValue)/2, cy = cos(timeValue)/2, r = radius;
+    float vertices[2 * (NumSegments + 2)];
+    float cx = sin(timeValue)/2, cy = cos(timeValue)/2, r = Radius;
     vertices[0] = cx;
     vertices[1] = cy;
-    for (int i = 0; i <= num_segments; ++i) {
-        float theta = 2.0f * M_PIf * float(i) / float(num_segments);
+    for (int i = 0; i <= NumSegments; ++i) {
+        float theta = 2.0f * M_PIf * float(i) / float(NumSegments);
         vertices[2 * (i + 1)] = cx + r * cosf(theta);
         vertices[2 * (i + 1) + 1] = cy + r * sinf(theta);
     }

@@ -1,12 +1,13 @@
 #ifndef OPENGLAPP_BALL_H
 #define OPENGLAPP_BALL_H
 
+#include "../config.h"
 #include "glm/glm.hpp"
 
 class Ball {
 public:
     // Constructor
-    explicit Ball(const float reflectance, const float radius): Reflectance(reflectance), Radius(radius) {};
+    Ball(const float reflectance, const float radius, const unsigned int num_segments);
     ~Ball();
 
     // Update ball position based on movement vector and delta time or reset to start position
@@ -18,6 +19,10 @@ public:
     void SetRadius(const float radius) { Radius = radius; }
     void SetGravity(const float gravity) { Gravity = gravity; }
 
+    // Render and VAO
+    GLuint bouncingBallVAO;
+    void CreateBouncingBall();
+
     // Getters
     glm::vec2 GetPosition() const { return Position; }
 private:
@@ -25,6 +30,7 @@ private:
     float Reflectance = 0;
     float Radius = 0;
     float Gravity = 9.81f;
+    unsigned int NumSegments = 0;
 
     glm::vec2 Velocity = glm::vec2(0.0f, 0.0f);
 
