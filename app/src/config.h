@@ -17,4 +17,10 @@
 
 #include <filesystem>
 
+// Renders
+#include <../src/renders/LeftWall.h>
+#include <../src/renders/RightWall.h>
+#include <../src/renders/Floor.h>
+#include <../src/renders/BouncingBall.h>
+
 using namespace std;

@@ -39,7 +39,7 @@ void processInput(GLFWwindow *window)
 int main() {
     glfwInit();
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1000, 1000, "Big Bouncing Ball", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -54,141 +54,13 @@ int main() {
         return -1;
     }
 
-    // Generate circle vertices
-    const int num_segments = 20l;
-    float vertices[2 * (num_segments + 2)];
-    float cx = 0.0f, cy = 0.0f, r = 0.4f;
-    vertices[0] = cx;
-    vertices[1] = cy;
-    for (int i = 0; i <= num_segments; ++i) {
-        float theta = 2.0f * M_PIf * float(i) / float(num_segments);
-        vertices[2 * (i + 1)] = cx + r * cosf(theta);
-        vertices[2 * (i + 1) + 1] = cy + r * sinf(theta);
-    }
+    // generate bouncing ball
+    const float radius = 0.1, num_segments = 20;
 
-    // VAO & VBO
-    GLuint VAO, VBO;
-
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *) 0);
-    glEnableVertexAttribArray(0);
-
-    // Triangle vertices
-
-    float triVertices[] = {
-        -0.5f, -0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f,
-         0.0f,  0.5f, 0.0f
-    };
-
-    // Triangle VAO & VBO
-    GLuint triVAO, triVBO;
-
-    glGenVertexArrays(1, &triVAO);
-    glBindVertexArray(triVAO);
-
-    glGenBuffers(1, &triVBO);
-    glBindBuffer(GL_ARRAY_BUFFER,triVBO);
-
-    glBufferData(GL_ARRAY_BUFFER, sizeof(triVertices), triVertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
-    glEnableVertexAttribArray(0);
-
-    // Left wall vertices & indices
-    float leftWallVertices[] = {
-        -0.9f,  1.0f, 0.0f,  // top right
-        -0.9f, -1.0f, 0.0f,  // bottom right
-        -1.0f, -1.0f, 0.0f,  // bottom left
-        -1.0f,  1.0f, 0.0f   // top left
-    };
-
-    unsigned int leftWallIndices[] = {
-        0, 1, 3,  // first Triangle
-        1, 2, 3   // second Triangle
-    };
-
-    // Left wall VAO & VBO & EBO
-    GLuint leftWallVAO, leftWallVBO, leftWallEBO;
-
-    glGenVertexArrays(1, &leftWallVAO);
-    glBindVertexArray(leftWallVAO);
-
-    glGenBuffers(1, &leftWallVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, leftWallVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(leftWallVertices), leftWallVertices, GL_STATIC_DRAW);
-
-    glGenBuffers(1, &leftWallEBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, leftWallEBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(leftWallIndices), leftWallIndices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    // Right wall vertices & indices
-    float rightWallVertices[] = {
-        0.9f,  1.0f, 0.0f,  // top right
-        0.9f, -1.0f, 0.0f,  // bottom right
-        1.0f, -1.0f, 0.0f,  // bottom left
-        1.0f,  1.0f, 0.0f   // top left
-    };
-
-    unsigned int rightWallIndices[] = {
-        0, 1, 3,  // first Triangle
-        1, 2, 3   // second Triangle
-    };
-
-    // Right wall VAO & VBO & EBO
-    GLuint rightWallVAO, rightWallVBO, rightWallEBO;
-
-    glGenVertexArrays(1, &rightWallVAO);
-    glBindVertexArray(rightWallVAO);
-
-    glGenBuffers(1, &rightWallVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, rightWallVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(rightWallVertices), rightWallVertices, GL_STATIC_DRAW);
-
-    glGenBuffers(1, &rightWallEBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rightWallEBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(rightWallIndices), rightWallIndices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    // Floor vertices & indices
-    float floorVertices[] = {
-        1.0f,  -0.9f, 0.0f,  // top right
-        1.0f,  -1.0f, 0.0f,  // bottom right
-        -1.0f, -1.0f, 0.0f,  // bottom left
-        -1.0f, -0.9f, 0.0f   // top left
-    };
-
-    unsigned int floorIndices[] = {
-        0, 1, 3,  // first Triangle
-        1, 2, 3   // second Triangle
-    };
-
-    // Right wall VAO & VBO & EBO
-    GLuint floorVAO, floorVBO, floorEBO;
-
-    glGenVertexArrays(1, &floorVAO);
-    glBindVertexArray(floorVAO);
-
-    glGenBuffers(1, &floorVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, floorVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(floorVertices), floorVertices, GL_STATIC_DRAW);
-
-    glGenBuffers(1, &floorEBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, floorEBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(floorIndices), floorIndices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
+    // generate walls and floor
+    createLeftWall();
+    createRightWall();
+    createFloor();
 
     // Compile shaders
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -235,26 +107,22 @@ int main() {
     glDeleteShader(fragmentShaderBlue);
 
     // Set polygon mode to line (wireframe)
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 
 
     while (!glfwWindowShouldClose(window)) {
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         // Set red color
         glUseProgram(shaderProgramRed);
 
         // Draw circle
-        glBindVertexArray(VAO);
+        createBouncingBall(radius, num_segments);
+
+        glBindVertexArray(bouncingBallVAO);
         glDrawArrays(GL_TRIANGLE_FAN, 0, num_segments + 2);
-
-        // Set green color
-        glUseProgram(shaderProgramGreen);
-
-        // Draw triangle
-        glBindVertexArray(triVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
 
         // Set color blue
         glUseProgram(shaderProgramBlue);
@@ -277,8 +145,6 @@ int main() {
         glfwPollEvents();
     }
 
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
     glfwTerminate();
     return 0;
 }
