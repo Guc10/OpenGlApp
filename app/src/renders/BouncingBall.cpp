@@ -4,8 +4,9 @@
 GLuint bouncingBallVAO;
 
 void createBouncingBall(float radius, unsigned int num_segments) {
+    float timeValue = glfwGetTime();
     float vertices[2 * (num_segments + 2)];
-    float cx = 0.0f, cy = 0.0f, r = radius;
+    float cx = sin(timeValue)/2, cy = cos(timeValue)/2, r = radius;
     vertices[0] = cx;
     vertices[1] = cy;
     for (int i = 0; i <= num_segments; ++i) {
