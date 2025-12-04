@@ -7,12 +7,14 @@ set(SOURCES
     main.cpp
     physics/Ball.cpp
     physics/Movement.cpp
+    physics/Boundaries.cpp
 )
 
 set(HEADERS
     config.h
     physics/Ball.h
     physics/Movement.h
+    physics/Boundaries.h
 )
 
 set(IMGUI

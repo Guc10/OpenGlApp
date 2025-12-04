@@ -5,8 +5,7 @@
 
 class Movement {
 public:
-    static glm::vec2 getMousePosition(float xpos, float ypos);
-    static glm::vec2 calculateVector(glm::vec2 currentBallPosition, glm::vec2 mousePosition);
+    static glm::vec2 getMousevector(float xpos, float ypos, glm::vec2 &currentBallPosition);
 };
 
 

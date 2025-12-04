@@ -1,7 +1,3 @@
-//
-// Created by guc10 on 3.12.2025.
-//
-
 #ifndef OPENGLAPP_BALL_H
 #define OPENGLAPP_BALL_H
 
@@ -18,9 +14,9 @@ public:
     void ResetPosition() { Position = StartPosition; };
 
     // Setters
-    void SetReflectance(float reflectance) { Reflectance = reflectance; }
-    void SetRadius(float radius) { Radius = radius; }
-    void SetGravity(float gravity) { Gravity = gravity; }
+    void SetReflectance(const float reflectance) { Reflectance = reflectance; }
+    void SetRadius(const float radius) { Radius = radius; }
+    void SetGravity(const float gravity) { Gravity = gravity; }
 
     // Getters
     glm::vec2 GetPosition() const { return Position; }
