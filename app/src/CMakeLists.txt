@@ -7,6 +7,7 @@ set(SOURCES
     main.cpp
     physics/Ball.cpp
     physics/Movement.cpp
+    physics/Boundaries.cpp
     renders/LeftWall.cpp
     renders/RightWall.cpp
     renders/Floor.cpp
@@ -17,6 +18,7 @@ set(HEADERS
     config.h
     physics/Ball.h
     physics/Movement.h
+    physics/Boundaries.h
     renders/LeftWall.h
     renders/RightWall.h
     renders/Floor.h
