@@ -1,7 +1,5 @@
 // main.cpp
 #include "config.h"
-#include "renders/Floor.h"
-#include "renders/RightWall.h"
 
 std::string loadShaderSource(const std::string& filePath) {
     std::ifstream file(std::string(SHADER_DIR) + filePath);
@@ -58,7 +56,6 @@ int main() {
 
     // generate bouncing ball
     const float radius = 0.1, num_segments = 20;
-    createBouncingBall(radius, num_segments);
 
     // generate walls and floor
     createLeftWall();
@@ -110,17 +107,20 @@ int main() {
     glDeleteShader(fragmentShaderBlue);
 
     // Set polygon mode to line (wireframe)
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 
 
     while (!glfwWindowShouldClose(window)) {
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         // Set red color
         glUseProgram(shaderProgramRed);
 
         // Draw circle
+        createBouncingBall(radius, num_segments);
+
         glBindVertexArray(bouncingBallVAO);
         glDrawArrays(GL_TRIANGLE_FAN, 0, num_segments + 2);
 
