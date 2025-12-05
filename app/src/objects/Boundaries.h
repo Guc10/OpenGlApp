@@ -13,8 +13,9 @@ public:
     void ResolveCollision(Ball &ball);
 
     GLuint boundariesVAO;
+    unsigned int trianglesCount = 9;
 private:
-    float vertices[24] = {
+    float vertices[27] = {
         -1.0f, -1.0f, 0.0f,
         -0.9f, -0.9f, 0.0f,
          1.0f,  1.0f, 0.0f,
@@ -22,9 +23,10 @@ private:
         -1.0f,  1.0f, 0.0f,
         -0.9f,  0.9f, 0.0f,
          1.0f, -1.0f, 0.0f,
-         0.9f, -0.9f, 0.0f
+         0.9f, -0.9f, 0.0f,
+         0.3f,  0.0f, 0.0f
     };
-    unsigned int indices[24] = {
+    unsigned int indices[27] = {
         0, 1, 5,
         0, 4, 5,
         0, 1, 7,
@@ -32,7 +34,8 @@ private:
         2, 3, 4,
         2, 3, 6,
         3, 6, 7,
-        3, 4, 5
+        3, 4, 5,
+        1, 7, 8
     };
 
     float minX = -0.9f, maxX = 0.9f;

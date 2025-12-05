@@ -138,7 +138,7 @@ int main() {
         // draw boundaries (blue)
         glUseProgram(shaderProgramBlue);
         glBindVertexArray(boundaries->boundariesVAO);
-        glDrawElements(GL_TRIANGLES, 24, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 27, GL_UNSIGNED_INT, 0);
 
         // swap and poll
         glfwSwapBuffers(window);
