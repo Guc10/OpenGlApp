@@ -1,11 +1,16 @@
 #ifndef OPENGLAPP_BOUNDARIES_H
 #define OPENGLAPP_BOUNDARIES_H
+
 #include "../config.h"
+#include "glm/glm.hpp"
+#include "Ball.h"
 
 class Boundaries {
 public:
     Boundaries();
     ~Boundaries();
+
+    void ResolveCollision(Ball &ball);
 
     GLuint boundariesVAO;
 private:
@@ -29,6 +34,9 @@ private:
         3, 6, 7,
         3, 4, 5
     };
+
+    float minX = -0.9f, maxX = 0.9f;
+    float minY = -0.9f, maxY = 0.9f;
 };
 
 #endif //OPENGLAPP_BOUNDARIES_H

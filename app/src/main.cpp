@@ -13,9 +13,7 @@ std::string loadShaderSource(const std::string& filePath) {
 
     std::stringstream buffer;
     buffer << file.rdbuf();
-    std::string content = buffer.str();
-
-    return content;
+    return buffer.str();
 }
 
 std::string vertexShaderSourceStr = loadShaderSource("main.vert");
@@ -57,7 +55,7 @@ int main() {
     }
 
     // generate bouncing ball
-    const float radius = 0.1;
+    const float radius = 0.1f;
     const unsigned int num_segments = 20;
     auto *ball = new Ball(0.8f, radius, num_segments);
 
@@ -108,34 +106,47 @@ int main() {
     glDeleteShader(fragmentShaderGreen);
     glDeleteShader(fragmentShaderBlue);
 
-    // Set polygon mode to line (wireframe)
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    double lastTime = glfwGetTime();
 
     while (!glfwWindowShouldClose(window)) {
+        // time
+        double currentTime = glfwGetTime();
+        float delta = static_cast<float>(currentTime - lastTime);
+        lastTime = currentTime;
+
+        // input
+        processInput(window);
+
+        // physics update: gravity + integration
+        ball->UpdatePosition({}, delta);
+
+        // enforce boundaries / handle bounces
+        boundaries->ResolveCollision(*ball);
+
+        // render
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // Set red color
+        ball->UpdateMesh();
+        // draw ball (red)
         glUseProgram(shaderProgramRed);
-
-        // Draw circle
-        ball->CreateBouncingBall();
-
+        // NOTE: Do not call the private CreateBouncingBall() from here.
+        // If you need the mesh rebuilt every frame, expose a public method in Ball.
         glBindVertexArray(ball->bouncingBallVAO);
         glDrawArrays(GL_TRIANGLE_FAN, 0, num_segments + 2);
 
-        // Set color blue
+        // draw boundaries (blue)
         glUseProgram(shaderProgramBlue);
-
-        // Draw boundaries
         glBindVertexArray(boundaries->boundariesVAO);
         glDrawElements(GL_TRIANGLES, 24, GL_UNSIGNED_INT, 0);
 
-        processInput(window);
-
+        // swap and poll
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
+    delete ball;
+    delete boundaries;
 
     glfwTerminate();
     return 0;
