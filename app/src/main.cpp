@@ -3,6 +3,7 @@
 #include "objects/Boundaries.h"
 #include "objects/Ball.h"
 
+// Function for loading shaders from files
 std::string loadShaderSource(const std::string& filePath) {
     std::ifstream file(std::string(SHADER_DIR) + filePath);
     if (!file.is_open()) {
@@ -16,6 +17,7 @@ std::string loadShaderSource(const std::string& filePath) {
     return buffer.str();
 }
 
+// Loading shaders from files
 std::string vertexShaderSourceStr = loadShaderSource("main.vert");
 const char* vertexShaderSource = vertexShaderSourceStr.c_str();
 
@@ -28,15 +30,15 @@ const char* fragmentShaderSourceGreen = fragmentShaderSourceGreenStr.c_str();
 std::string fragmentShaderSourceBlueStr = loadShaderSource("blue.frag");
 const char* fragmentShaderSourceBlue = fragmentShaderSourceBlueStr.c_str();
 
-
+// Input processing
 void processInput(GLFWwindow *window)
 {
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 }
 
-
 int main() {
+    // Initialize main window
     glfwInit();
 
     GLFWwindow* window = glfwCreateWindow(1000, 1000, "Big Bouncing Ball", NULL, NULL);
@@ -54,12 +56,12 @@ int main() {
         return -1;
     }
 
-    // generate bouncing ball
+    // Generate bouncing ball
     const float radius = 0.1f;
     const unsigned int num_segments = 20;
     auto *ball = new Ball(0.8f, radius, num_segments);
 
-    // generate boundaries
+    // Generate boundaries
     auto *boundaries = new Boundaries();
 
     // Compile shaders
@@ -109,42 +111,42 @@ int main() {
     double lastTime = glfwGetTime();
 
     while (!glfwWindowShouldClose(window)) {
-        // time
+        // Time necessary for calculating ball movement
         double currentTime = glfwGetTime();
         float delta = static_cast<float>(currentTime - lastTime);
         lastTime = currentTime;
 
-        // input
+        // Input
         processInput(window);
 
-        // physics update: gravity + integration
+        // Ball movement
         ball->UpdatePosition({}, delta);
 
-        // enforce boundaries / handle bounces
+        // Handle collisions
         boundaries->ResolveCollision(*ball);
 
-        // render
+        // Clear last frame
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         ball->UpdateMesh();
-        // draw ball (red)
+
+        // Draw ball (red)
         glUseProgram(shaderProgramRed);
-        // NOTE: Do not call the private CreateBouncingBall() from here.
-        // If you need the mesh rebuilt every frame, expose a public method in Ball.
         glBindVertexArray(ball->bouncingBallVAO);
         glDrawArrays(GL_TRIANGLE_FAN, 0, num_segments + 2);
 
-        // draw boundaries (blue)
+        // Draw boundaries (blue)
         glUseProgram(shaderProgramBlue);
         glBindVertexArray(boundaries->boundariesVAO);
         glDrawElements(GL_TRIANGLES, 27, GL_UNSIGNED_INT, 0);
 
-        // swap and poll
+        // Swap and poll
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
+    // Delete ball and boundaries objects
     delete ball;
     delete boundaries;
 
