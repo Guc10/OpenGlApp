@@ -127,9 +127,7 @@ int main() {
     static float launchPower = 1.0f;
 
     double lastTime = glfwGetTime();
-
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
+    
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 

@@ -17,7 +17,7 @@ public:
 
     GLuint boundariesVAO;
 private:
-    float vertices[27] = {
+    float vertices[30] = {
         -1.0f, -1.0f, 0.0f,
         -0.9f, -0.9f, 0.0f,
          1.0f,  1.0f, 0.0f,
@@ -26,9 +26,10 @@ private:
         -0.9f,  0.9f, 0.0f,
          1.0f, -1.0f, 0.0f,
          0.9f, -0.9f, 0.0f,
-         0.7f, -0.5f, 0.0f
+         0.7f, -0.5f, 0.0f,
+         0.0f, -0.9f, 0.0f,
     };
-    unsigned int indices[27] = {
+    unsigned int indices[30] = {
         0, 1, 5,
         0, 4, 5,
         0, 1, 7,
@@ -37,7 +38,7 @@ private:
         2, 3, 6,
         3, 6, 7,
         3, 4, 5,
-        1, 7, 8
+        9, 7, 8
     };
 };
 
