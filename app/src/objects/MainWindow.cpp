@@ -76,20 +76,6 @@ void MainWindow::Render()
         glDeleteShader(fs);
     }
 
-    if (ball_ && ball_->bouncingBallVAO != 0) {
-        ball_->UpdateMesh();
-        glDisable(GL_DEPTH_TEST);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glUseProgram(ballProgram);
-        GLint loc = glGetUniformLocation(ballProgram, "uColor");
-        if (loc >= 0) glUniform4f(loc, 0.9f, 0.3f, 0.2f, 1.0f);
-        glBindVertexArray(ball_->bouncingBallVAO);
-        glDrawArrays(GL_TRIANGLE_FAN, 0, (GLsizei)ball_->GetVertexCount());
-        glBindVertexArray(0);
-        glUseProgram(0);
-        glDisable(GL_BLEND);
-    }
     int w, h;
     glfwGetFramebufferSize(window_, &w, &h);
     ImGui::SetNextWindowSize(ImVec2((float)w, (float)h), ImGuiCond_Always);

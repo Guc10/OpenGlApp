@@ -205,6 +205,12 @@ int main() {
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             glDrawArrays(GL_TRIANGLE_FAN, 0, (GLsizei) ball.GetVertexCount());
+
+            if (colorLoc >= 0)
+                glUniform4f(colorLoc, 0.0f, 0.0f, 1.0f, 1.0f);
+            glBindVertexArray(boundaries.boundariesVAO);
+            glDrawElements(GL_TRIANGLES, 27, GL_UNSIGNED_INT, 0);
+
             glDisable(GL_BLEND);
             glBindVertexArray(0);
             glUseProgram(0);

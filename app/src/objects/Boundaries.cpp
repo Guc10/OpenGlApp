@@ -26,36 +26,48 @@ Boundaries::~Boundaries() {
     }
 }
 
-void Boundaries::ResolveCollision(Ball &ball) {
+glm::vec2 ClosestPointOnSegment(glm::vec2 p, glm::vec2 a, glm::vec2 b)
+{
+    glm::vec2 ab = b - a;
+    float t = glm::dot(p - a, ab) / glm::dot(ab, ab);
+    t = glm::clamp(t, 0.0f, 1.0f);
+    return a + t * ab;
+}
+
+void Boundaries::ResolveCollision(Ball& ball)
+{
     glm::vec2 pos = ball.GetPosition();
     glm::vec2 vel = ball.GetVelocity();
     float r = ball.GetRadius();
     float refl = ball.GetReflectance();
 
-    // X axis collisions
-    if (pos.x - r < minX) {
-        pos.x = minX + r;
-        vel.x = -vel.x * refl;
-        // small damping on Y as well to simulate energy loss
-        vel.y *= refl;
-    } else if (pos.x + r > maxX) {
-        pos.x = maxX - r;
-        vel.x = -vel.x * refl;
-        vel.y *= refl;
-    }
+    for (int i = 0; i < 27; i += 3)
+    {
+        glm::vec2 A(vertices[indices[i] * 3],     vertices[indices[i] * 3 + 1]);
+        glm::vec2 B(vertices[indices[i+1] * 3],   vertices[indices[i+1] * 3 + 1]);
+        glm::vec2 C(vertices[indices[i+2] * 3],   vertices[indices[i+2] * 3 + 1]);
 
-    // Y axis collisions
-    if (pos.y - r < minY) {
-        pos.y = minY + r;
-        vel.y = -vel.y * refl;
-        // horizontal damping on floor contact
-        vel.x *= refl;
-    } else if (pos.y + r > maxY) {
-        pos.y = maxY - r;
-        vel.y = -vel.y * refl;
-        vel.x *= refl;
+        glm::vec2 edges[3][2] = {{A,B},{B,C},{C,A}};
+
+        for (int e = 0; e < 3; e++)
+        {
+            glm::vec2 p = ClosestPointOnSegment(pos, edges[e][0], edges[e][1]);
+            glm::vec2 diff = pos - p;
+            float dist2 = glm::dot(diff, diff);
+
+            if (dist2 <= r * r)
+            {
+                glm::vec2 normal = glm::normalize(diff);
+
+                pos = p + normal * r;
+
+                vel = vel - 2.0f * glm::dot(vel, normal) * normal;
+                vel *= refl;
+            }
+        }
     }
 
     ball.SetPosition(pos);
     ball.SetVelocity(vel);
 }
+

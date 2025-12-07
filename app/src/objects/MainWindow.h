@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <GLFW/glfw3.h>
 #include "Ball.h"
+#include "Boundaries.h"
 
 class MainWindow {
 public:
@@ -36,6 +37,8 @@ private:
     uint32_t renderTex_ = 0;
     int texWidth_ = 0, texHeight_ = 0;
     Ball* ball_ = nullptr;
+    Boundaries* boundaries_ = nullptr;
+
 
     bool running_ = false;
     float gravity_ = 9.81f;
