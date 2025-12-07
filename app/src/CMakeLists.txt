@@ -6,7 +6,6 @@ set(CMAKE_CXX_STANDARD 23)
 set(SOURCES
         main.cpp
         objects/Ball.cpp
-        objects/Movement.cpp
         objects/Boundaries.cpp
         objects/MainWindow.cpp
 )
@@ -14,7 +13,6 @@ set(SOURCES
 set(HEADERS
         config.h
         objects/Ball.h
-        objects/Movement.h
         objects/Boundaries.h
         objects/MainWindow.h
 )
