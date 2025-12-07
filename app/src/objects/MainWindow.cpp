@@ -47,6 +47,7 @@ void MainWindow::setRenderTexture(uint32_t glTexId, int width, int height)
 
 void MainWindow::Render()
 {
+    // Inicjalizacja shadera dla kulki
     static GLuint ballProgram = 0;
     if (ballProgram == 0) {
         const char* vsSrc =
@@ -76,6 +77,7 @@ void MainWindow::Render()
         glDeleteShader(fs);
     }
 
+    // Ustawienie okna IMGUI
     int w, h;
     glfwGetFramebufferSize(window_, &w, &h);
     ImGui::SetNextWindowSize(ImVec2((float)w, (float)h), ImGuiCond_Always);
@@ -89,11 +91,12 @@ void MainWindow::Render()
 
     ImGui::Begin("Main Window", nullptr, window_flags);
 
+    // Sprawdzenie błędów
     GLenum err = glGetError();
     if (err != GL_NO_ERROR) { ImGui::Text("GL error: 0x%X", err); }
 
+    // Wyświetlenie tekstury
     if (renderTex_ != 0) {
-
         ImVec2 imgSize = (texWidth_ > 0 && texHeight_ > 0)
             ? ImVec2((float)texWidth_, (float)texHeight_)
             : ImVec2(640, 480);
@@ -117,16 +120,13 @@ void MainWindow::Render()
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offsetY);
 
         ImGui::Image((void*)(intptr_t)renderTex_, imgSize, ImVec2(0,1), ImVec2(1,0));
-
-        //ImGui::Text("Thumbnail:");
-        //ImGui::Image((void*)(intptr_t)renderTex_, ImVec2(128, 128), ImVec2(0,1), ImVec2(1,0));
-
     } else {
         ImGui::TextWrapped("No render texture set. Set with setRenderTexture(glTexId, width, height).");
     }
 
     ImGui::Separator();
 
+    // Sterowanie symulacją
     if (!running_) {
         if (ImGui::Button("Start")) { running_ = true; if (onStart_) onStart_(); }
     } else {
@@ -154,8 +154,8 @@ void MainWindow::Render()
         if (onReflectanceChanged_) onReflectanceChanged_(reflectance_);
     }
 
+    // Renderowanie okna
     ImGui::End();
-
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }

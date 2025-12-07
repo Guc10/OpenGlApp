@@ -9,7 +9,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-// Helper: create a simple framebuffer + texture to render into
+// Generowanie tekstury renderowej
 static GLuint CreateRenderTexture(int width, int height, GLuint &fboOut) {
     GLuint tex = 0, fbo = 0;
     glGenTextures(1, &tex);
@@ -29,6 +29,7 @@ static GLuint CreateRenderTexture(int width, int height, GLuint &fboOut) {
     return tex;
 }
 
+// Utworzenie shaderów
 static GLuint CompileShader(GLenum type, const char *src) {
     GLuint s = glCreateShader(type);
     glShaderSource(s, 1, &src, nullptr);
@@ -75,13 +76,13 @@ static GLuint CreateSimpleProgram() {
 int main() {
     if (!glfwInit()) return -1;
 
-    // Request OpenGL 3.3 core
+    // Wymuszenie odpowiedniej wersji
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-
+    // Utworzenie okna
     GLFWwindow *window = glfwCreateWindow(1280, 720, "OpenGlApp", nullptr, nullptr);
     if (!window) {
         glfwTerminate();
@@ -97,25 +98,23 @@ int main() {
         return -1;
     }
 
-    // Do NOT initialize ImGui here if MainWindow does it.
-    // Construct UI wrapper (assumed to initialize ImGui)
     MainWindow ui(window);
 
-    // Create scene FBO/texture and pass to UI
+    // Utowrzenie sceny
     const int sceneW = 800, sceneH = 600;
     GLuint sceneFbo = 0;
     GLuint sceneTex = CreateRenderTexture(sceneW, sceneH, sceneFbo);
     ui.setRenderTexture(sceneTex, sceneW, sceneH);
 
-    // Create objects: ball + boundaries
+    // Utowrzenie kuli i granic
     Ball ball(0.8f, 0.08f, 40); // reflectance, radius, segments
     Boundaries boundaries;
 
-    // Shader to draw the ball (works in NDC space that Ball uses)
+    // Shader do rysowania obiektów
     GLuint ballProgram = CreateSimpleProgram();
     GLint colorLoc = glGetUniformLocation(ballProgram, "uColor");
 
-    // Running control via UI callbacks
+    // Sterowanie za pomocą callbacków
     bool running = true;
     ui.setOnStart([&]() { running = true; });
     ui.setOnStop([&]() { running = false; });
@@ -127,31 +126,28 @@ int main() {
     static glm::vec2 dragStartNDC(0.0f);
     static float launchPower = 1.0f;
 
-    // Time tracking
     double lastTime = glfwGetTime();
 
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
     while (!glfwWindowShouldClose(window)) {
-        // Poll events first so input queries reflect this frame
         glfwPollEvents();
 
-        // time step
+        // Ustawienie czasu
         double now = glfwGetTime();
         float dt = static_cast<float>(now - lastTime);
         lastTime = now;
 
-        // Start ImGui frame early (after polling)
+        // Rozpoczecie klatki
         ui.NewFrame();
 
-        // --- Mouse / drag handling ---
+        // Obsługa myszy
         double mx, my;
         glfwGetCursorPos(window, &mx, &my);
 
         int fbW = 1, fbH = 1;
         glfwGetFramebufferSize(window, &fbW, &fbH);
 
-        // Map cursor into the scene FBO coordinates.
-        // This assumes the scene image in the UI is shown at size (sceneW, sceneH)
-        // and is centered in the framebuffer. Adjust imgX/imgY if different.
         int imgX = (fbW - sceneW) / 2;
         int imgY = (fbH - sceneH) / 2;
 
@@ -184,19 +180,20 @@ int main() {
             }
         }
 
-        // --- Physics update (only when running and not dragging) ---
+        // Aktualizacja fizyki
         if (running && !dragging && dt > 0.0f) {
             ball.UpdatePosition(glm::vec2(0.0f), dt);
             boundaries.ResolveCollision(ball);
             ball.UpdateMesh();
         }
 
-        // --- Render scene into FBO (unchanged) ---
+        // Renderowanie sceny
         glBindFramebuffer(GL_FRAMEBUFFER, sceneFbo);
         glViewport(0, 0, sceneW, sceneH);
         glClearColor(0.20f, 0.25f, 0.30f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        // Rysowanie kuli i granic
         if (ball.bouncingBallVAO != 0) {
             glUseProgram(ballProgram);
             if (colorLoc >= 0)
@@ -217,21 +214,22 @@ int main() {
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        // Prepare screen and render UI (unchanged)
+        // Przygotowanie UI
         int displayW, displayH;
         glfwGetFramebufferSize(window, &displayW, &displayH);
         glViewport(0, 0, displayW, displayH);
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        ui.Render(); // draws the UI + the scene texture inside the UI
+        // Renderowanie UI
+        ui.Render();
 
         glfwSwapBuffers(window);
     }
 
-    // Cleanup
+    // Czyszczenie pamięci
     glDeleteProgram(ballProgram);
-    ui.Shutdown(); // assume MainWindow handles ImGui shutdown
+    ui.Shutdown();
 
     glDeleteFramebuffers(1, &sceneFbo);
     glDeleteTextures(1, &sceneTex);

@@ -19,7 +19,7 @@ Ball::Ball(const float reflectance, const float radius, const unsigned int num_s
 }
 
 Ball::~Ball() {
-    // delete VAO/VBO when destructed
+    // Czyszcenie pamięci
     if (bouncingBallVBO) {
         glDeleteBuffers(1, &bouncingBallVBO);
     }
@@ -29,27 +29,24 @@ Ball::~Ball() {
 }
 
 void Ball::LaunchFromDrag(const glm::vec2 &drag, float power) {
-    // drag is expected in NDC (end - start). Positive Y is up.
-    const float sensitivity = 4.0f; // tweak as needed
+    const float sensitivity = 4.0f;
     Velocity = drag * (sensitivity * power);
 }
 
 void Ball::UpdatePosition(glm::vec2 movementVector, float deltaTime) {
     if (deltaTime <= 0.0f) return;
 
-    // Apply gravity (downwards in NDC -> negative Y)
+    // Grawitacja
     Velocity.y -= Gravity * deltaTime;
-
-    // Integrate position
     Position += Velocity * deltaTime;
 
-    // Simple air damping to avoid perpetual motion
+    // Opór powietrza
     const float airDamping = 0.9995f;
     Velocity *= airDamping;
 }
 
 void Ball::CreateBouncingBall() {
-    // build vertex array for circle (center + ring)
+    // Utworzenie piłki
     std::vector<float> vertices;
     vertices.reserve(2 * (NumSegments + 2));
     float cx = Position.x;
@@ -62,7 +59,6 @@ void Ball::CreateBouncingBall() {
         vertices.push_back(cy + Radius * sinf(theta));
     }
 
-    // ensure VAO/VBO exist (generate once)
     if (bouncingBallVAO == 0) {
         glGenVertexArrays(1, &bouncingBallVAO);
     }
@@ -70,7 +66,6 @@ void Ball::CreateBouncingBall() {
         glGenBuffers(1, &bouncingBallVBO);
     }
 
-    // bind and upload vertex data
     glBindVertexArray(bouncingBallVAO);
     glBindBuffer(GL_ARRAY_BUFFER, bouncingBallVBO);
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_DYNAMIC_DRAW);
@@ -78,13 +73,12 @@ void Ball::CreateBouncingBall() {
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // unbind to be tidy
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 }
 
 void Ball::UpdateMesh() {
-    // build vertices centered at current Position
+    // Generowanie piłki na podstawie obecnej pozycji
     std::vector<float> vertices;
     vertices.reserve(2 * (NumSegments + 2));
     float cx = Position.x;
@@ -97,9 +91,7 @@ void Ball::UpdateMesh() {
         vertices.push_back(cy + Radius * sinf(theta));
     }
 
-    // upload to GPU (replace buffer contents)
     glBindBuffer(GL_ARRAY_BUFFER, bouncingBallVBO);
-    // replace data (size matches allocation in CreateBouncingBall)
     glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(float), vertices.data());
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }

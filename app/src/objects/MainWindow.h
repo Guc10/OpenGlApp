@@ -11,19 +11,14 @@ public:
     explicit MainWindow(GLFWwindow* window);
     ~MainWindow();
 
-    // Call at start of each frame
     void NewFrame();
 
-    // Build and render the ImGui UI for this window
     void Render();
 
-    // Cleanup ImGui
     void Shutdown();
 
-    // Set the OpenGL texture id that contains the rendered scene
     void setRenderTexture(uint32_t glTexId, int width = 0, int height = 0);
 
-    // Callbacks
     void setOnStart(std::function<void()> cb) { onStart_ = std::move(cb); }
     void setOnStop(std::function<void()> cb) { onStop_ = std::move(cb); }
     void setOnGravityChanged(std::function<void(float)> cb) { onGravityChanged_ = std::move(cb); }
@@ -40,7 +35,7 @@ private:
     Boundaries* boundaries_ = nullptr;
 
 
-    bool running_ = false;
+    bool running_ = true;
     float gravity_ = 9.81f;
     float reflectance_ = 0.8f;
 

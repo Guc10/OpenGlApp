@@ -26,6 +26,7 @@ Boundaries::~Boundaries() {
     }
 }
 
+// Funkcja pomocnicza
 glm::vec2 ClosestPointOnSegment(glm::vec2 p, glm::vec2 a, glm::vec2 b)
 {
     glm::vec2 ab = b - a;
@@ -34,6 +35,7 @@ glm::vec2 ClosestPointOnSegment(glm::vec2 p, glm::vec2 a, glm::vec2 b)
     return a + t * ab;
 }
 
+// Obliczanie kolizji
 void Boundaries::ResolveCollision(Ball& ball)
 {
     glm::vec2 pos = ball.GetPosition();
