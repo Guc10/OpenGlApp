@@ -152,6 +152,21 @@ void MainWindow::Render()
     ImGui::PopItemWidth();
     radius_ = std::clamp(radius_, 0.06f, 0.5f);
 
+    ImGui::PushItemWidth(50.0f);
+
+    if (ImGui::Checkbox("Dark Mode", &themeDark_))
+    {
+        if (themeDark_)
+        {
+            ImGui::StyleColorsDark();
+        }
+        else
+        {
+            ImGui::StyleColorsLight();
+        }
+    }
+
+
     if (gravity_ != prevG) {
         if (onGravityChanged_) onGravityChanged_(gravity_);
     }

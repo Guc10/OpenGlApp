@@ -40,6 +40,7 @@ private:
     float gravity_ = 9.81f;
     float reflectance_ = 0.8f;
     float radius_ = 0.08f;
+    bool themeDark_ = true;
 
     std::function<void()> onStart_;
     std::function<void()> onStop_;
