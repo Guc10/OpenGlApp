@@ -137,8 +137,9 @@ void MainWindow::Render()
 
     float prevG = gravity_;
     ImGui::PushItemWidth(150.0f);
-    ImGui::InputFloat("Gravity", &gravity_, 1.0f, 1.0f, "%.2f");
+    ImGui::InputFloat("Gravity (min: 0, max: 50.0)", &gravity_, 1.0f, 1.0f, "%.2f");
     ImGui::PopItemWidth();
+    gravity_ = std::clamp(gravity_, 0.0f, 50.0f);
 
     float prevR = reflectance_;
     ImGui::PushItemWidth(150.0f);
@@ -148,7 +149,7 @@ void MainWindow::Render()
 
     float prevRadius = radius_;
     ImGui::PushItemWidth(150.0f);
-    ImGui::InputFloat("Reflectance (min: 0.06, max: 0.5)", &radius_, 0.01f, 0.1f, "%.2f");
+    ImGui::InputFloat("Ball radius (min: 0.06, max: 0.5)", &radius_, 0.01f, 0.1f, "%.2f");
     ImGui::PopItemWidth();
     radius_ = std::clamp(radius_, 0.06f, 0.5f);
 
@@ -156,14 +157,8 @@ void MainWindow::Render()
 
     if (ImGui::Checkbox("Dark Mode", &themeDark_))
     {
-        if (themeDark_)
-        {
-            ImGui::StyleColorsDark();
-        }
-        else
-        {
-            ImGui::StyleColorsLight();
-        }
+        if (themeDark_) ImGui::StyleColorsDark();
+        else ImGui::StyleColorsLight();
     }
 
 

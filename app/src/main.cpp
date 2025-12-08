@@ -128,7 +128,7 @@ int main() {
     static float launchPower = 1.0f;
 
     double lastTime = glfwGetTime();
-    
+
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 
