@@ -142,9 +142,15 @@ void MainWindow::Render()
 
     float prevR = reflectance_;
     ImGui::PushItemWidth(150.0f);
-    ImGui::InputFloat("Reflectance (min: 0, max: 1.0)", &reflectance_, 0.1f, 0.1f, "%.1f");
+    ImGui::InputFloat("Reflectance (min: 0.1, max: 1.0)", &reflectance_, 0.1f, 0.1f, "%.1f");
     ImGui::PopItemWidth();
     reflectance_ = std::clamp(reflectance_, 0.1f, 1.0f);
+
+    float prevRadius = radius_;
+    ImGui::PushItemWidth(150.0f);
+    ImGui::InputFloat("Reflectance (min: 0.06, max: 0.5)", &radius_, 0.01f, 0.1f, "%.2f");
+    ImGui::PopItemWidth();
+    radius_ = std::clamp(radius_, 0.06f, 0.5f);
 
     if (gravity_ != prevG) {
         if (onGravityChanged_) onGravityChanged_(gravity_);
@@ -152,6 +158,9 @@ void MainWindow::Render()
     if (reflectance_ != prevR) {
 
         if (onReflectanceChanged_) onReflectanceChanged_(reflectance_);
+    }
+    if (radius_ != prevRadius) {
+        if (onRadiusChanged_) onRadiusChanged_(radius_);
     }
 
     // Renderowanie okna

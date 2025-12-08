@@ -23,6 +23,7 @@ public:
     void setOnStop(std::function<void()> cb) { onStop_ = std::move(cb); }
     void setOnGravityChanged(std::function<void(float)> cb) { onGravityChanged_ = std::move(cb); }
     void setOnReflectanceChanged(std::function<void(float)> cb) { onReflectanceChanged_ = std::move(cb); }
+    void setOnRadiusChanged(std::function<void(float)> cb) { onRadiusChanged_ = std::move(cb); }
 
     bool isRunning() const { return running_; }
     float gravity() const { return gravity_; }
@@ -38,9 +39,11 @@ private:
     bool running_ = true;
     float gravity_ = 9.81f;
     float reflectance_ = 0.8f;
+    float radius_ = 0.08f;
 
     std::function<void()> onStart_;
     std::function<void()> onStop_;
     std::function<void(float)> onGravityChanged_;
     std::function<void(float)> onReflectanceChanged_;
+    std::function<void(float)> onRadiusChanged_;
 };

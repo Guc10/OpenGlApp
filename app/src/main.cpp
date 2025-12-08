@@ -120,6 +120,7 @@ int main() {
     ui.setOnStop([&]() { running = false; });
     ui.setOnGravityChanged([&](float g) { ball.SetGravity(g); });
     ui.setOnReflectanceChanged([&](float r) { ball.SetReflectance(r); });
+    ui.setOnRadiusChanged([&](float rad) { ball.SetRadius(rad); ball.UpdateMesh(); });
 
     static bool mouseDown = false;
     static bool dragging = false;
