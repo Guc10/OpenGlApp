@@ -1,7 +1,6 @@
 #ifndef OPENGLAPP_BOUNDARIES_H
 #define OPENGLAPP_BOUNDARIES_H
 
-#include "../config.h"
 #include "glm/glm.hpp"
 #include "Ball.h"
 

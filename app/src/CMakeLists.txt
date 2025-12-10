@@ -18,13 +18,13 @@ set(HEADERS
 )
 
 set(IMGUI
-        ../dependencies/imgui/imgui.cpp
-        ../dependencies/imgui/imgui_draw.cpp
-        ../dependencies/imgui/imgui_widgets.cpp
-        ../dependencies/imgui/imgui_tables.cpp
-        ../dependencies/imgui/imgui_demo.cpp
-        ../dependencies/imgui/imgui_impl_glfw.cpp
-        ../dependencies/imgui/imgui_impl_opengl3.cpp
+        ../dependencies/ImGui/imgui.cpp
+        ../dependencies/ImGui/imgui_draw.cpp
+        ../dependencies/ImGui/imgui_widgets.cpp
+        ../dependencies/ImGui/imgui_tables.cpp
+        ../dependencies/ImGui/imgui_demo.cpp
+        ../dependencies/ImGui/backends/imgui_impl_glfw.cpp
+        ../dependencies/ImGui/backends/imgui_impl_opengl3.cpp
 )
 
 set(GLAD
@@ -44,7 +44,8 @@ target_include_directories(OpenGlApp PRIVATE
         ../dependencies
         ../dependencies/GLAD
         ../dependencies/GLM
-        ../dependencies/imgui
+        ../dependencies/ImGui
+        ../dependencies/ImGui/backends
 )
 
 find_package(glfw3 REQUIRED)

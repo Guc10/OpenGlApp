@@ -1,11 +1,8 @@
 #ifndef OPENGLAPP_BALL_H
 #define OPENGLAPP_BALL_H
 
-#include "../config.h"
 #include "glm/glm.hpp"
 #include <glad/glad.h>
-#include <cstddef>
-
 
 class Ball {
 public:
