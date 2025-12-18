@@ -137,9 +137,9 @@ void MainWindow::Render()
 
     float prevG = gravity_;
     ImGui::PushItemWidth(150.0f);
-    ImGui::InputFloat("Gravity (min: 0, max: 50.0)", &gravity_, 1.0f, 1.0f, "%.2f");
+    ImGui::InputFloat("Gravity (min: 0, max: 20.0)", &gravity_, 1.0f, 1.0f, "%.2f");
     ImGui::PopItemWidth();
-    gravity_ = std::clamp(gravity_, 0.0f, 50.0f);
+    gravity_ = std::clamp(gravity_, 0.0f, 20.0f);
 
     float prevR = reflectance_;
     ImGui::PushItemWidth(150.0f);

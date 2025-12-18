@@ -32,8 +32,8 @@ private:
     GLFWwindow* window_;
     uint32_t renderTex_ = 0;
     int texWidth_ = 0, texHeight_ = 0;
-    Ball* ball_ = nullptr;
-    Boundaries* boundaries_ = nullptr;
+    // Ball* ball_ = nullptr;
+    // Boundaries* boundaries_ = nullptr;
 
 
     bool running_ = true;
