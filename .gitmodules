@@ -1,0 +1,9 @@
+[submodule "app/dependencies/glfw"]
+	path = app/dependencies/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "app/dependencies/glm"]
+	path = app/dependencies/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "app/dependencies/imgui"]
+	path = app/dependencies/imgui
+	url = https://github.com/ocornut/imgui.git
