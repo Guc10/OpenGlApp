@@ -1,13 +1,11 @@
 // C++
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include "MainWindow.h"
 #include <iostream>
-#include "Ball.h"
-#include "Boundaries.h"
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
+#include "objects/Ball.h"
+#include "objects/MainWindow.h"
+#include "objects/Boundaries.h"
+
 
 // Generowanie tekstury renderowej
 static GLuint CreateRenderTexture(int width, int height, GLuint &fboOut) {
