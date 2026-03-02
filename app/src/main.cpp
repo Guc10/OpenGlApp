@@ -1,34 +1,36 @@
-// C++
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
-#include "objects/Ball.h"
+#include "objects/FluidSim.h"
 #include "objects/MainWindow.h"
-#include "objects/Boundaries.h"
 
+// ---------------------------------------------------------------------------
+// FBO helpers
+// ---------------------------------------------------------------------------
 
-// Generowanie tekstury renderowej
-static GLuint CreateRenderTexture(int width, int height, GLuint &fboOut) {
+static GLuint CreateRenderTexture(int width, int height, GLuint& fboOut) {
     GLuint tex = 0, fbo = 0;
     glGenTextures(1, &tex);
     glBindTexture(GL_TEXTURE_2D, tex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0,
+                 GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         std::cerr << "Framebuffer incomplete\n";
-    }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     fboOut = fbo;
     return tex;
 }
 
-// Utworzenie shaderów
-static GLuint CompileShader(GLenum type, const char *src) {
+// ---------------------------------------------------------------------------
+// Shader helpers
+// ---------------------------------------------------------------------------
+
+static GLuint CompileShader(GLenum type, const char* src) {
     GLuint s = glCreateShader(type);
     glShaderSource(s, 1, &src, nullptr);
     glCompileShader(s);
@@ -37,200 +39,175 @@ static GLuint CompileShader(GLenum type, const char *src) {
     if (!ok) {
         char buf[1024];
         glGetShaderInfoLog(s, 1024, nullptr, buf);
-        std::cerr << "Shader compile error: " << buf << "\n";
+        std::cerr << "Shader error: " << buf << "\n";
     }
     return s;
 }
 
-static GLuint CreateSimpleProgram() {
-    const char *vs =
-            "#version 330 core\n"
-            "layout(location = 0) in vec2 aPos;\n"
-            "void main(){ gl_Position = vec4(aPos, 0.0, 1.0); }\n";
-    const char *fs =
-            "#version 330 core\n"
-            "out vec4 FragColor;\n"
-            "uniform vec4 uColor;\n"
-            "void main(){ FragColor = uColor; }\n";
-
-    GLuint vsId = CompileShader(GL_VERTEX_SHADER, vs);
-    GLuint fsId = CompileShader(GL_FRAGMENT_SHADER, fs);
+static GLuint LinkProgram(GLuint vs, GLuint fs) {
     GLuint prog = glCreateProgram();
-    glAttachShader(prog, vsId);
-    glAttachShader(prog, fsId);
+    glAttachShader(prog, vs);
+    glAttachShader(prog, fs);
     glLinkProgram(prog);
     GLint ok = 0;
     glGetProgramiv(prog, GL_LINK_STATUS, &ok);
     if (!ok) {
         char buf[1024];
         glGetProgramInfoLog(prog, 1024, nullptr, buf);
-        std::cerr << "Program link error: " << buf << "\n";
+        std::cerr << "Link error: " << buf << "\n";
     }
-    glDeleteShader(vsId);
-    glDeleteShader(fsId);
+    glDeleteShader(vs);
+    glDeleteShader(fs);
     return prog;
 }
+
+// Particle program: instanced circles with speed-based colour blending
+static GLuint CreateParticleProgram() {
+    const char* vs =
+        "#version 330 core\n"
+        "layout(location=0) in vec2 aVertex;\n"       // unit-circle point
+        "layout(location=1) in vec3 aInstance;\n"     // xy=pos, z=speed01
+        "uniform float uRadius;\n"
+        "out float vSpeed;\n"
+        "void main(){\n"
+        "  vSpeed = aInstance.z;\n"
+        "  gl_Position = vec4(aVertex * uRadius + aInstance.xy, 0.0, 1.0);\n"
+        "}\n";
+
+    const char* fs =
+        "#version 330 core\n"
+        "in  float vSpeed;\n"
+        "out vec4  FragColor;\n"
+        "uniform vec3 uColorLow;\n"
+        "uniform vec3 uColorHigh;\n"
+        "void main(){\n"
+        "  vec3 col = mix(uColorLow, uColorHigh, vSpeed);\n"
+        "  // soft circular edge\n"
+        "  FragColor = vec4(col, 0.88);\n"
+        "}\n";
+
+    return LinkProgram(
+        CompileShader(GL_VERTEX_SHADER,   vs),
+        CompileShader(GL_FRAGMENT_SHADER, fs));
+}
+
+// Simple flat-colour program for scene geometry
+static GLuint CreateSceneProgram() {
+    const char* vs =
+        "#version 330 core\n"
+        "layout(location=0) in vec2 aPos;\n"
+        "void main(){ gl_Position = vec4(aPos, 0.0, 1.0); }\n";
+
+    const char* fs =
+        "#version 330 core\n"
+        "out vec4 FragColor;\n"
+        "uniform vec4 uColor;\n"
+        "void main(){ FragColor = uColor; }\n";
+
+    return LinkProgram(
+        CompileShader(GL_VERTEX_SHADER,   vs),
+        CompileShader(GL_FRAGMENT_SHADER, fs));
+}
+
+// ---------------------------------------------------------------------------
+// main
+// ---------------------------------------------------------------------------
 
 int main() {
     if (!glfwInit()) return -1;
 
-    // Wymuszenie odpowiedniej wersji
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-    // Utworzenie okna
-    GLFWwindow *window = glfwCreateWindow(1280, 720, "OpenGlApp", nullptr, nullptr);
-    if (!window) {
-        glfwTerminate();
-        return -1;
-    }
+    GLFWwindow* window = glfwCreateWindow(1280, 720, "Fluid Simulation", nullptr, nullptr);
+    if (!window) { glfwTerminate(); return -1; }
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
 
-    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
-        std::cerr << "Failed to initialize GLAD\n";
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        std::cerr << "GLAD init failed\n";
         glfwDestroyWindow(window);
         glfwTerminate();
         return -1;
     }
 
-    MainWindow ui(window);
-
-    // Utowrzenie sceny
+    // ---- Scene FBO ----
     const int sceneW = 800, sceneH = 600;
     GLuint sceneFbo = 0;
     GLuint sceneTex = CreateRenderTexture(sceneW, sceneH, sceneFbo);
+
+    // ---- Shaders ----
+    GLuint particleProg = CreateParticleProgram();
+    GLuint sceneProg    = CreateSceneProgram();
+
+    GLint uRadius    = glGetUniformLocation(particleProg, "uRadius");
+    GLint uColorLow  = glGetUniformLocation(particleProg, "uColorLow");
+    GLint uColorHigh = glGetUniformLocation(particleProg, "uColorHigh");
+    GLint uColor     = glGetUniformLocation(sceneProg,    "uColor");
+
+    // ---- Simulation ----
+    FluidSim fluid;
+
+    // ---- UI ----
+    MainWindow ui(window);
     ui.setRenderTexture(sceneTex, sceneW, sceneH);
 
-    // Utowrzenie kuli i granic
-    Ball ball(0.8f, 0.08f, 40); // reflectance, radius, segments
-    Boundaries boundaries;
-
-    // Shader do rysowania obiektów
-    GLuint ballProgram = CreateSimpleProgram();
-    GLint colorLoc = glGetUniformLocation(ballProgram, "uColor");
-
-    // Sterowanie za pomocą callbacków
-    bool running = true;
-    ui.setOnStart([&]() { running = true; });
-    ui.setOnStop([&]() { running = false; });
-    ui.setOnGravityChanged([&](float g) { ball.SetGravity(g); });
-    ui.setOnReflectanceChanged([&](float r) { ball.SetReflectance(r); });
-    ui.setOnRadiusChanged([&](float rad) { ball.SetRadius(rad); ball.UpdateMesh(); });
-
-    static bool mouseDown = false;
-    static bool dragging = false;
-    static glm::vec2 dragStartNDC(0.0f);
-    static float launchPower = 1.0f;
+    ui.setOnStart(           [&]()      { fluid.SetRunning(true);          });
+    ui.setOnStop(            [&]()      { fluid.SetRunning(false);         });
+    ui.setOnReset(           [&]()      { fluid.Reset();                   });
+    ui.setOnGravityChanged(  [&](float g){ fluid.SetGravity(g);           });
+    ui.setOnViscosityChanged([&](float v){ fluid.SetViscosity(v);         });
+    ui.setOnQualityChanged(  [&](int   q){ fluid.SetQuality(q);           });
+    ui.setOnRenderRadiusChanged([&](float r){ fluid.SetRenderRadius(r);   });
+    ui.setOnColorChanged([&](float r, float g, float b){
+        fluid.SetBaseColor({r, g, b});
+    });
 
     double lastTime = glfwGetTime();
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 
-        // Ustawienie czasu
         double now = glfwGetTime();
-        float dt = static_cast<float>(now - lastTime);
-        lastTime = now;
+        float  dt  = static_cast<float>(now - lastTime);
+        lastTime   = now;
 
-        // Rozpoczecie klatki
         ui.NewFrame();
 
-        // Obsługa myszy
-        double mx, my;
-        glfwGetCursorPos(window, &mx, &my);
+        // ---- Simulate ----
+        fluid.Update(dt);
 
-        int fbW = 1, fbH = 1;
-        glfwGetFramebufferSize(window, &fbW, &fbH);
-
-        int imgX = (fbW - sceneW) / 2;
-        int imgY = (fbH - sceneH) / 2;
-
-        float localX = static_cast<float>(mx) - static_cast<float>(imgX);
-        float localY = static_cast<float>(my) - static_cast<float>(imgY);
-        bool insideScene =
-                localX >= 0.0f && localY >= 0.0f && localX <= static_cast<float>(sceneW) && localY <= static_cast<float>
-                (sceneH);
-
-        glm::vec2 currNDC(0.0f, 0.0f);
-        if (insideScene && sceneW > 0 && sceneH > 0) {
-            currNDC.x = localX / static_cast<float>(sceneW) * 2.0f - 1.0f;
-            currNDC.y = 1.0f - localY / static_cast<float>(sceneH) * 2.0f;
-        }
-
-        int mbState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
-        if (insideScene && mbState == GLFW_PRESS && !mouseDown) {
-            mouseDown = true;
-            dragging = true;
-            dragStartNDC = currNDC;
-            ball.SetPosition(currNDC);
-        } else if (insideScene && mbState == GLFW_PRESS && mouseDown) {
-            if (dragging) ball.SetPosition(currNDC);
-        } else if (mbState == GLFW_RELEASE && mouseDown) {
-            mouseDown = false;
-            if (dragging) {
-                glm::vec2 drag = currNDC - dragStartNDC;
-                ball.LaunchFromDrag(drag, launchPower);
-                dragging = false;
-            }
-        }
-
-        // Aktualizacja fizyki
-        if (running && !dragging && dt > 0.0f) {
-            ball.UpdatePosition(glm::vec2(0.0f), dt);
-            boundaries.ResolveCollision(ball);
-            ball.UpdateMesh();
-        }
-
-        // Renderowanie sceny
+        // ---- Render scene to FBO ----
         glBindFramebuffer(GL_FRAMEBUFFER, sceneFbo);
         glViewport(0, 0, sceneW, sceneH);
-        glClearColor(0.20f, 0.25f, 0.30f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClearColor(0.13f, 0.15f, 0.19f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
 
-        // Rysowanie kuli i granic
-        if (ball.bouncingBallVAO != 0) {
-            glUseProgram(ballProgram);
-            if (colorLoc >= 0)
-                glUniform4f(colorLoc, 0.9f, 0.35f, 0.2f, 1.0f);
-            glBindVertexArray(ball.bouncingBallVAO);
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            glDrawArrays(GL_TRIANGLE_FAN, 0, (GLsizei) ball.GetVertexCount());
+        fluid.RenderScene(sceneProg, uColor);
+        fluid.RenderParticles(particleProg, uRadius, uColorLow, uColorHigh);
 
-            if (colorLoc >= 0)
-                glUniform4f(colorLoc, 0.0f, 0.0f, 1.0f, 1.0f);
-            glBindVertexArray(boundaries.boundariesVAO);
-            glDrawElements(GL_TRIANGLES, 27, GL_UNSIGNED_INT, 0);
-
-            glDisable(GL_BLEND);
-            glBindVertexArray(0);
-            glUseProgram(0);
-        }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        // Przygotowanie UI
-        int displayW, displayH;
-        glfwGetFramebufferSize(window, &displayW, &displayH);
-        glViewport(0, 0, displayW, displayH);
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        // ---- Render window ----
+        int dw, dh;
+        glfwGetFramebufferSize(window, &dw, &dh);
+        glViewport(0, 0, dw, dh);
+        glClearColor(0.08f, 0.08f, 0.10f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
 
-        // Renderowanie UI
-        ui.Render();
+        ui.Render(fluid.GetParticleCount());
 
         glfwSwapBuffers(window);
     }
 
-    // Czyszczenie pamięci
-    glDeleteProgram(ballProgram);
-    ui.Shutdown();
-
+    // ---- Cleanup ----
+    glDeleteProgram(particleProg);
+    glDeleteProgram(sceneProg);
     glDeleteFramebuffers(1, &sceneFbo);
     glDeleteTextures(1, &sceneTex);
-
+    ui.Shutdown();
     glfwDestroyWindow(window);
     glfwTerminate();
     return 0;

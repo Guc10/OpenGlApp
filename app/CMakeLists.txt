@@ -39,9 +39,12 @@ target_link_libraries(imgui PUBLIC glfw glad)
 # ---------- App ----------
 add_executable(OpenGlApp
         src/main.cpp
-        src/objects/Ball.cpp
-        src/objects/Boundaries.cpp
+        src/objects/FluidSim.cpp
         src/objects/MainWindow.cpp
+)
+
+target_include_directories(OpenGlApp PRIVATE
+        src
 )
 
 target_link_libraries(OpenGlApp

@@ -3,177 +3,142 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include <glad/glad.h>
-#include <sstream>
-#include "Ball.h"
+#include <algorithm>
 
-MainWindow::MainWindow(GLFWwindow* window)
-    : window_(window)
-{
+MainWindow::MainWindow(GLFWwindow* window) : window_(window) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
     ImGui::StyleColorsDark();
-
     ImGui_ImplGlfw_InitForOpenGL(window_, true);
     ImGui_ImplOpenGL3_Init("#version 330");
 }
 
-MainWindow::~MainWindow()
-{
-    Shutdown();
-}
+MainWindow::~MainWindow() { Shutdown(); }
 
-void MainWindow::Shutdown()
-{
+void MainWindow::Shutdown() {
     if (!ImGui::GetCurrentContext()) return;
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 }
 
-void MainWindow::NewFrame()
-{
+void MainWindow::NewFrame() {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 }
 
-void MainWindow::setRenderTexture(uint32_t glTexId, int width, int height)
-{
+void MainWindow::setRenderTexture(uint32_t glTexId, int width, int height) {
     renderTex_ = glTexId;
-    if (width > 0) texWidth_ = width;
+    if (width  > 0) texWidth_  = width;
     if (height > 0) texHeight_ = height;
 }
 
-void MainWindow::Render()
-{
-    // Inicjalizacja shadera dla kulki
-    static GLuint ballProgram = 0;
-    if (ballProgram == 0) {
-        const char* vsSrc =
-            "#version 330 core\n"
-            "layout(location = 0) in vec2 aPos;\n"
-            "void main(){ gl_Position = vec4(aPos, 0.0, 1.0); }\n";
-        const char* fsSrc =
-            "#version 330 core\n"
-            "out vec4 FragColor;\n"
-            "uniform vec4 uColor;\n"
-            "void main(){ FragColor = uColor; }\n";
-
-        auto compile = [](GLenum type, const char* src)->GLuint {
-            GLuint s = glCreateShader(type);
-            glShaderSource(s, 1, &src, nullptr);
-            glCompileShader(s);
-            return s;
-        };
-
-        GLuint vs = compile(GL_VERTEX_SHADER, vsSrc);
-        GLuint fs = compile(GL_FRAGMENT_SHADER, fsSrc);
-        ballProgram = glCreateProgram();
-        glAttachShader(ballProgram, vs);
-        glAttachShader(ballProgram, fs);
-        glLinkProgram(ballProgram);
-        glDeleteShader(vs);
-        glDeleteShader(fs);
-    }
-
-    // Ustawienie okna IMGUI
+void MainWindow::Render(int particleCount) {
     int w, h;
     glfwGetFramebufferSize(window_, &w, &h);
     ImGui::SetNextWindowSize(ImVec2((float)w, (float)h), ImGuiCond_Always);
     ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
 
-    ImGuiWindowFlags window_flags =
-        ImGuiWindowFlags_NoMove |
-        ImGuiWindowFlags_NoResize |
-        ImGuiWindowFlags_NoCollapse |
-        ImGuiWindowFlags_NoBringToFrontOnFocus;
+    ImGuiWindowFlags flags =
+        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus;
 
-    ImGui::Begin("Main Window", nullptr, window_flags);
+    ImGui::Begin("Fluid Simulation", nullptr, flags);
 
-    // Sprawdzenie błędów
-    GLenum err = glGetError();
-    if (err != GL_NO_ERROR) { ImGui::Text("GL error: 0x%X", err); }
-
-    // Wyświetlenie tekstury
+    // ---- Scene texture ----
     if (renderTex_ != 0) {
         ImVec2 imgSize = (texWidth_ > 0 && texHeight_ > 0)
             ? ImVec2((float)texWidth_, (float)texHeight_)
             : ImVec2(640, 480);
 
-        const float maxW = ImGui::GetContentRegionAvail().x;
+        float maxW = ImGui::GetContentRegionAvail().x;
         if (imgSize.x > maxW) {
             float scale = maxW / imgSize.x;
             imgSize.x *= scale;
             imgSize.y *= scale;
         }
-
         ImVec2 avail = ImGui::GetContentRegionAvail();
-
-        float offsetX = (avail.x - imgSize.x) * 0.5f;
-        if (offsetX < 0) offsetX = 0;
-
-        float offsetY = (avail.y - imgSize.y) * 0.5f;
-        if (offsetY < 0) offsetY = 0;
-
+        float offsetX = std::max(0.0f, (avail.x - imgSize.x) * 0.5f);
+        float offsetY = std::max(0.0f, (avail.y - imgSize.y) * 0.5f);
         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offsetX);
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offsetY);
-
         ImGui::Image((void*)(intptr_t)renderTex_, imgSize, ImVec2(0,1), ImVec2(1,0));
-    } else {
-        ImGui::TextWrapped("No render texture set. Set with setRenderTexture(glTexId, width, height).");
     }
 
     ImGui::Separator();
 
-    // Sterowanie symulacją
+    // ---- Playback controls ----
+    ImGui::Text("Particles: %d", particleCount);
+    ImGui::SameLine(160);
     if (!running_) {
-        if (ImGui::Button("Start")) { running_ = true; if (onStart_) onStart_(); }
+        if (ImGui::Button("  Start  ")) { running_ = true;  if (onStart_) onStart_(); }
     } else {
-        if (ImGui::Button("Stop")) { running_ = false; if (onStop_) onStop_(); }
+        if (ImGui::Button("  Stop   ")) { running_ = false; if (onStop_)  onStop_();  }
     }
     ImGui::SameLine();
-    ImGui::Text("Running: %s", running_ ? "Yes" : "No");
+    if (ImGui::Button("  Reset  ")) { if (onReset_) onReset_(); }
+    ImGui::SameLine();
+    ImGui::TextDisabled(running_ ? "[running]" : "[paused]");
 
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Text("Fluid Properties");
+    ImGui::Separator();
+    ImGui::Spacing();
+
+    // ---- Gravity ----
     float prevG = gravity_;
-    ImGui::PushItemWidth(150.0f);
-    ImGui::InputFloat("Gravity (min: 0, max: 20.0)", &gravity_, 1.0f, 1.0f, "%.2f");
+    ImGui::PushItemWidth(160.f);
+    ImGui::SliderFloat("Gravity", &gravity_, 0.0f, 10.0f, "%.2f");
     ImGui::PopItemWidth();
-    gravity_ = std::clamp(gravity_, 0.0f, 20.0f);
+    if (gravity_ != prevG && onGravityChanged_) onGravityChanged_(gravity_);
 
-    float prevR = reflectance_;
-    ImGui::PushItemWidth(150.0f);
-    ImGui::InputFloat("Reflectance (min: 0.1, max: 1.0)", &reflectance_, 0.1f, 0.1f, "%.1f");
+    // ---- Viscosity ----
+    float prevV = viscosity_;
+    ImGui::PushItemWidth(160.f);
+    ImGui::SliderFloat("Viscosity", &viscosity_, 0.0f, 5.0f, "%.2f");
     ImGui::PopItemWidth();
-    reflectance_ = std::clamp(reflectance_, 0.1f, 1.0f);
+    if (viscosity_ != prevV && onViscosityChanged_) onViscosityChanged_(viscosity_);
 
-    float prevRadius = radius_;
-    ImGui::PushItemWidth(150.0f);
-    ImGui::InputFloat("Ball radius (min: 0.06, max: 0.5)", &radius_, 0.01f, 0.1f, "%.2f");
+    // ---- Quality (spawn rate) ----
+    int prevQ = quality_;
+    ImGui::PushItemWidth(160.f);
+    ImGui::SliderInt("Quality (flow rate)", &quality_, 1, 10);
     ImGui::PopItemWidth();
-    radius_ = std::clamp(radius_, 0.06f, 0.5f);
+    ImGui::SameLine();
+    ImGui::TextDisabled("particles/burst");
+    if (quality_ != prevQ && onQualityChanged_) onQualityChanged_(quality_);
 
-    ImGui::PushItemWidth(50.0f);
+    // ---- Particle render radius ----
+    float prevRad = renderRadius_;
+    ImGui::PushItemWidth(160.f);
+    ImGui::SliderFloat("Particle size", &renderRadius_, 0.008f, 0.05f, "%.3f");
+    ImGui::PopItemWidth();
+    if (renderRadius_ != prevRad && onRenderRadiusChanged_) onRenderRadiusChanged_(renderRadius_);
 
-    if (ImGui::Checkbox("Dark Mode", &themeDark_))
+    // ---- Color ----
+    float prevCol[3] = {color_[0], color_[1], color_[2]};
+    ImGui::ColorEdit3("Fluid color", color_);
+    if ((color_[0] != prevCol[0] || color_[1] != prevCol[1] || color_[2] != prevCol[2])
+        && onColorChanged_)
     {
+        onColorChanged_(color_[0], color_[1], color_[2]);
+    }
+
+    ImGui::Spacing();
+
+    // ---- Theme ----
+    if (ImGui::Checkbox("Dark mode", &themeDark_)) {
         if (themeDark_) ImGui::StyleColorsDark();
-        else ImGui::StyleColorsLight();
+        else            ImGui::StyleColorsLight();
     }
 
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::TextDisabled("Teal rectangle = fluid source");
+    ImGui::TextDisabled("Gray triangle  = obstacle / ramp");
 
-    if (gravity_ != prevG) {
-        if (onGravityChanged_) onGravityChanged_(gravity_);
-    }
-    if (reflectance_ != prevR) {
-
-        if (onReflectanceChanged_) onReflectanceChanged_(reflectance_);
-    }
-    if (radius_ != prevRadius) {
-        if (onRadiusChanged_) onRadiusChanged_(radius_);
-    }
-
-    // Renderowanie okna
     ImGui::End();
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
