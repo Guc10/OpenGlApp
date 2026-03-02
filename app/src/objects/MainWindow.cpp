@@ -113,7 +113,7 @@ void MainWindow::Render(int particleCount) {
     // ---- Particle render radius ----
     float prevRad = renderRadius_;
     ImGui::PushItemWidth(160.f);
-    ImGui::SliderFloat("Particle size", &renderRadius_, 0.008f, 0.05f, "%.3f");
+    ImGui::SliderFloat("Particle size", &renderRadius_, 0.022f, 0.05f, "%.3f");
     ImGui::PopItemWidth();
     if (renderRadius_ != prevRad && onRenderRadiusChanged_) onRenderRadiusChanged_(renderRadius_);
 

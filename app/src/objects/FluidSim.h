@@ -25,7 +25,10 @@ public:
     void SetGravity(float g)            { gravity_      = g; }
     void SetViscosity(float v)          { viscosity_    = glm::clamp(v, 0.0f, 10.0f); }
     void SetQuality(int q)              { quality_      = glm::clamp(q, 1, 10); }
-    void SetRenderRadius(float r)       { renderRadius_ = r; }
+    void SetRenderRadius(float r) {
+        renderRadius_ = r;
+        particleRadius_ = r;   // sync collision radius
+    }
     void SetBaseColor(glm::vec3 c)      { baseColor_    = c; }
     void SetRunning(bool r)             { running_      = r; }
     void Reset();
@@ -37,8 +40,12 @@ public:
 private:
     std::vector<Particle> particles_;
 
+    // ---- Hard particle collision (visual contact fix) ----
+    float particleRadius_ = 0.022f;   // physical radius used for collision
+    void ResolveParticleCollisions();
+
     // ---- SPH parameters ----
-    float h_           = 0.13f;   // smoothing radius (NDC units)
+    float h_           = 0.055f;   // smoothing radius (NDC units)
     float mass_        = 1.0f;
     float restDensity_ = 25.0f;
     float gasConstant_ = 90.0f;   // stiffness
@@ -53,7 +60,7 @@ private:
     bool  running_       = true;
     int   quality_       = 3;
     float spawnTimer_    = 0.0f;
-    static constexpr float spawnInterval_ = 0.07f;
+    static constexpr float spawnInterval_ = 0.3f;
     static constexpr int   maxParticles_  = 550;
 
     // ---- Physics boundaries (inner edges of walls) ----

@@ -69,6 +69,9 @@ void FluidSim::Update(float dt) {
         ComputeDensityPressure();
         ComputeForces();
         Integrate(sdt);
+
+        ResolveParticleCollisions();
+
         EnforceBoundaries();
     }
 
@@ -169,6 +172,37 @@ void FluidSim::ResolveObstacle(Particle& p) {
             float vn = glm::dot(p.vel, n);
             if (vn < 0.0f)
                 p.vel -= (1.0f + restitution_) * vn * n;
+        }
+    }
+}
+
+void FluidSim::ResolveParticleCollisions() {
+    int n = (int)particles_.size();
+
+    for (int i = 0; i < n; ++i) {
+        for (int j = i + 1; j < n; ++j) {
+
+            glm::vec2 r = particles_[i].pos - particles_[j].pos;
+            float dist = glm::length(r);
+            float minDist = 2.0f * particleRadius_;
+
+            if (dist < minDist && dist > 1e-6f) {
+                glm::vec2 normal = r / dist;
+                float penetration = minDist - dist;
+
+                // Separate particles symmetrically
+                particles_[i].pos += 0.5f * penetration * normal;
+                particles_[j].pos -= 0.5f * penetration * normal;
+
+                // Simple velocity correction (elastic-ish)
+                float vi = glm::dot(particles_[i].vel, normal);
+                float vj = glm::dot(particles_[j].vel, normal);
+
+                float impulse = (vi - vj) * 0.5f;
+
+                particles_[i].vel -= impulse * normal;
+                particles_[j].vel += impulse * normal;
+            }
         }
     }
 }
