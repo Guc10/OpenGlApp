@@ -1,102 +1,146 @@
-# Projekt OpenGL — Symulacja ruchu kuli 2D
+Dobra. Teraz wchodzimy poziom wyżej. Z kulki robimy ciecz, z prostych odbić robimy SPH, a z projektu szkolnego robimy coś, co brzmi jak mini-silnik fizyczny.
+
+---
+
+# Projekt OpenGL — Symulacja cieczy 2D (SPH)
 
 ## Opis projektu
 
-Projekt zakłada stworzenie symulacji ruchu kuli w środowisku 2D, w której kulą można sterować za pomocą strzałek.  
-W symulacji działa system **grawitacji** przyciągający obiekt w kierunku podłoża oraz **system kolizji ze ścianami**, zapewniający realistyczne odbicia.  
-Interfejs graficzny aplikacji realizowany jest przy użyciu **biblioteki GLFW**, a renderowaniem obiektów zajmuje się **OpenGL 4.5** z obsługą przez **GLAD**.  
-Za obliczenia fizyczne i matematyczne odpowiada **biblioteka GLM**.
+Projekt zakłada stworzenie interaktywnej symulacji cieczy w środowisku 2D, opartej na metodzie **Smoothed Particle Hydrodynamics (SPH)**.
 
-Aplikacja pozwoli na wizualne przedstawienie podstawowych zjawisk fizycznych, takich jak ruch, grawitacja i zderzenia sprężyste.
+Ciecz reprezentowana jest jako zbiór cząstek, które oddziałują na siebie poprzez siły:
+
+* ciśnienia,
+* lepkości,
+* grawitacji.
+
+System uwzględnia:
+
+* kolizje z granicami sceny,
+* interakcję z przeszkodami,
+* dynamiczne generowanie nowych cząstek.
+
+Renderowanie realizowane jest przy użyciu **OpenGL 4.5**, z obsługą przez **GLAD**, a interfejs użytkownika oparty jest na **GLFW** i **ImGui**.
+Za obliczenia matematyczne i wektorowe odpowiada **biblioteka GLM**.
+
+Aplikacja umożliwia wizualne przedstawienie zjawisk takich jak przepływ cieczy, oddziaływania międzycząsteczkowe oraz wpływ parametrów fizycznych na zachowanie płynu.
 
 ---
 
 ## Technologie
 
-| Komponent | Technologia |
-|------------|--------------|
-| Język programowania | C++23 |
-| Rendering | OpenGL 4.5 |
-|UI|ImGui|
-| Zarządzanie oknem i wejściem | GLFW |
-| Ładowanie funkcji OpenGL | GLAD |
-| Obliczenia wektorowe i macierze | GLM |
-| Budowanie projektu | CMake |
+| Komponent                    | Technologia |
+| ---------------------------- | ----------- |
+| Język programowania          | C++23       |
+| Rendering                    | OpenGL 4.5  |
+| UI                           | ImGui       |
+| Zarządzanie oknem i wejściem | GLFW        |
+| Ładowanie funkcji OpenGL     | GLAD        |
+| Obliczenia wektorowe         | GLM         |
+| Budowanie projektu           | CMake       |
 
 ---
 
-## Podział zadań
-
-### **Gustaw Grześkowiak — Logika fizyki i ruchu (GLM + kolizje)**
-
-**Zakres odpowiedzialności:**
-- Implementacja klasy obsługującej fizykę:
-    - wektory prędkości i przyspieszenia,
-    - grawitację,
-    - kolizje ze ścianami z tłumieniem energii (np. współczynnik odbicia `r = 0.9`).
-- Aktualizacja pozycji kuli w czasie (`deltaTime`).
-- Detekcja i reakcja na kolizje z granicami okna.
+# Podział projektu na zadania
 
 ---
 
-### **Filip Radke — Renderowanie i OpenGL (GLAD + shadery)**
 
-**Zakres odpowiedzialności:**
-- Inicjalizacja OpenGL 4.5 i GLAD.
-- Tworzenie i kompilacja shaderów.
-- Tworzenie buforów (VAO, VBO, EBO).
-- Implementacja klasy renderującej:
-    - Rysowanie obiektów i interfejsu użytkownika.
-    - Obsługa koloru, pozycji i skalowania w shaderze.
-- Optymalizacja renderowania i czyszczenia ekranu.
 
----
+* Implementacja struktury `Particle`:
 
-### **Filip Lubka — Interfejs, wejście i główny loop (GLFW / ImGui + integracja)**
-
-**Zakres odpowiedzialności:**
-- Inicjalizacja okna i kontekstu OpenGL (`Window`).
-- Obsługa wejścia (mysz, klawiatura).
-- Sterowanie kulą (strzałki/wsad).
-- Pętla główna programu (`main.cpp`):
-    - aktualizacja fizyki,
-    - renderowanie sceny,
-    - obsługa zdarzeń wejściowych.
-- Koordynacja integracji komponentów fizyki i renderowania.
+  * pozycja,
+  * prędkość,
+  * siły,
+  * gęstość,
+  * ciśnienie.
+* Obliczanie gęstości (kernel Poly6).
+* Obliczanie siły ciśnienia (Spiky gradient).
+* Obliczanie lepkości (Laplacian).
+* Implementacja całkowania numerycznego (Euler / semi-implicit).
+* Stabilizacja symulacji (substeps, ograniczenie dt).
 
 ---
 
-### 
+
+
+* Inicjalizacja OpenGL 4.5 i GLAD.
+* Tworzenie i kompilacja shaderów (vertex + fragment).
+* Implementacja renderowania instancyjnego cząstek.
+* Tworzenie VAO/VBO.
+* Renderowanie do FBO (opcjonalnie).
+* Kolorowanie cząstek w zależności od prędkości.
+* Optymalizacja wydajności przy dużej liczbie cząstek.
+
+---
+
+
+
+* Inicjalizacja okna i kontekstu OpenGL.
+* Implementacja klasy `MainWindow`.
+* Główna pętla programu:
+
+  * aktualizacja fizyki,
+  * renderowanie,
+  * obsługa zdarzeń.
+* Integracja modułu fizyki z renderingiem.
+* Implementacja panelu sterowania (ImGui):
+
+  * zmiana grawitacji,
+  * lepkości,
+  * intensywności generowania cząstek,
+  * reset symulacji.
 
 ---
 
 # Etapy realizacji projektu
-## (**W razie potrzeb będziemy się wspierać siłą przyjaźni !!!**)
+
+*(W razie potrzeby wspieramy się wzajemnie, używając siły przyjaźni.)*
+
+---
 
 ### Etap 1 — Konfiguracja środowiska
-- Ustawienie CMakeLists.txt.
-- Pobranie bibliotek (GLFW, GLAD, GLM).
-- Testowe okno z kolorem tła.
 
-### Etap 2 — Renderowanie (Filip Radke)
-- Stworzenie shaderów i buforów OpenGL.
-- Renderowanie kuli w środowisku 2D.
+* Ustawienie `CMakeLists.txt`.
+* Integracja GLFW, GLAD, GLM, ImGui.
+* Testowe okno z kolorem tła.
 
-### Etap 3 — Implementacja fizyki (Gustaw Grześkowiak)
-- Dodanie klasy z implementacją fiyzki.
-- Implementacja wektorów ruchu, grawitacji i kolizji.
+---
 
-### Etap 4 — Sterowanie i interfejs (Filip Lubka)
-- Implementacja obsługi myszy i klawiatury.
-- Dodanie możliwości przeciągania kuli.
-- Integracja logiki fizyki i renderingu.
+### Etap 2 — Renderowanie cząstek
+
+* Implementacja shaderów.
+* Renderowanie pojedynczej cząstki.
+* Wdrożenie instancing.
+
+---
+
+### Etap 3 — Implementacja silnika SPH
+
+* Struktura cząstek.
+* Obliczanie gęstości i ciśnienia.
+* Siły lepkości i grawitacji.
+* Stabilizacja symulacji.
+
+---
+
+### Etap 4 — Integracja i UI
+
+* Połączenie fizyki z renderingiem.
+* Panel sterowania parametrami.
+* Testy stabilności i optymalizacja.
 
 ---
 
 ## Założenia fizyczne
 
-- Grawitacja: `g = 9.81`
-- Czas symulacji liczony na podstawie `deltaTime`
-- Kolizje sprężyste z tłumieniem `r = 0.9`
-- Współrzędne świata: zakres `[-1, 1]`
-- W projekcie nie uwzględniamy oporów powietrza
+* Grawitacja: regulowana (domyślnie `g = 9.81`)
+* Metoda: SPH (Smoothed Particle Hydrodynamics)
+* Kernel wygładzający o promieniu `h`
+* Czas symulacji oparty na `deltaTime`
+* Kolizje z granicami z tłumieniem energii (`r ≈ 0.8–0.95`)
+* Symulacja 2D
+* Maksymalna liczba cząstek ograniczona ze względów wydajnościowych
+
+---
+
